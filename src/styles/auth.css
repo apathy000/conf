@@ -1,0 +1,268 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --lpfa-navy:      #1B3A6B;
+  --lpfa-navy-dark: #15305a;
+  --lpfa-red:       #C0392B;
+  --lpfa-bg:        #0f1923;
+  --lpfa-surface:   #ffffff;
+  --lpfa-border:    #e5e7eb;
+  --lpfa-input-bg:  #f9fafb;
+  --lpfa-text:      #111827;
+  --lpfa-muted:     #6b7280;
+  --lpfa-hint:      #9ca3af;
+  --radius-card:    16px;
+  --radius-input:   10px;
+  --font-main:      'DM Sans', 'Inter', sans-serif;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-main);
+  background: var(--lpfa-bg);
+}
+
+.lpfa-page {
+  font-family: var(--font-main);
+  background: var(--lpfa-bg);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+}
+
+.lpfa-card {
+  background: var(--lpfa-surface);
+  border-radius: var(--radius-card);
+  width: 100%;
+  max-width: 440px;
+  overflow: hidden;
+}
+
+.lpfa-header {
+  background: var(--lpfa-navy);
+  padding: 32px 36px 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.lpfa-header::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 120px; height: 120px;
+  background: rgba(192,57,43,0.15);
+  border-radius: 50%;
+}
+
+.lpfa-header::after {
+  content: '';
+  position: absolute;
+  bottom: -30px; left: -30px;
+  width: 80px; height: 80px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 50%;
+}
+
+.lpfa-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.lpfa-logo-badge {
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  line-height: 1;
+}
+
+.lpfa-logo-badge .lp { color: var(--lpfa-navy); font-weight: 700; font-size: 18px; font-style: italic; }
+.lpfa-logo-badge .fa { color: var(--lpfa-red);  font-weight: 700; font-size: 18px; font-style: italic; }
+.lpfa-logo-badge .n  { color: var(--lpfa-navy); font-weight: 700; font-size: 13px; font-style: italic; margin-left: 5px; }
+.lpfa-logo-badge .one{ color: var(--lpfa-red);  font-weight: 700; font-size: 20px; }
+
+.lpfa-school-name {
+  color: rgba(255,255,255,0.65);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  position: relative;
+  z-index: 1;
+}
+
+.lpfa-header h1 {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  position: relative;
+  z-index: 1;
+  letter-spacing: -0.3px;
+}
+
+.lpfa-header p {
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.lpfa-accent-bar {
+  height: 3px;
+  background: var(--lpfa-red);
+  border-radius: 2px;
+  margin-top: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.lpfa-body { padding: 28px 36px 32px; }
+
+.lpfa-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 9px 12px;
+  margin-bottom: 20px;
+  color: #1e40af;
+}
+
+.lpfa-notice svg { flex-shrink: 0; color: var(--lpfa-navy); }
+.lpfa-notice span { font-size: 12px; font-weight: 500; }
+
+.lpfa-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.lpfa-field { margin-bottom: 18px; }
+
+.lpfa-field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--lpfa-navy);
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  margin-bottom: 7px;
+}
+
+.lpfa-input-wrap { position: relative; }
+
+.lpfa-input-wrap svg {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--lpfa-hint);
+  pointer-events: none;
+  transition: color 0.2s;
+}
+
+.lpfa-input-wrap:focus-within svg { color: var(--lpfa-navy); }
+
+.lpfa-input-wrap input,
+.lpfa-input-wrap select {
+  width: 100%;
+  height: 44px;
+  border: 1.5px solid var(--lpfa-border);
+  border-radius: var(--radius-input);
+  padding: 0 14px 0 40px;
+  font-family: var(--font-main);
+  font-size: 14px;
+  color: var(--lpfa-text);
+  background: var(--lpfa-input-bg);
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.lpfa-input-wrap input:focus,
+.lpfa-input-wrap select:focus {
+  border-color: var(--lpfa-navy);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(27,58,107,0.1);
+}
+
+.lpfa-input-wrap input::placeholder { color: var(--lpfa-hint); }
+
+.lpfa-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #991b1b;
+  font-size: 13px;
+  padding: 9px 13px;
+  margin-bottom: 14px;
+}
+
+.lpfa-btn {
+  width: 100%;
+  height: 48px;
+  background: var(--lpfa-navy);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-input);
+  font-family: var(--font-main);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+  letter-spacing: -0.1px;
+}
+
+.lpfa-btn::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0;
+  width: 4px; height: 100%;
+  background: var(--lpfa-red);
+}
+
+.lpfa-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+.lpfa-footer-text {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--lpfa-muted);
+}
+
+.lpfa-footer-text a {
+  color: var(--lpfa-red);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.lpfa-footer-text a:hover { text-decoration: underline; }
+
+@media (max-width: 480px) {
+  .lpfa-header { padding: 24px 20px 20px; }
+  .lpfa-body   { padding: 20px 20px 28px; }
+  .lpfa-row    { grid-template-columns: 1fr; }
+}
