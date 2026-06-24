@@ -3,52 +3,7 @@ import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {useEffect, useState} from "react";
 
-import { useEffect, useState } from "react";
 
-export default function IPGuard({ children }) {
-  const [allowed, setAllowed] = useState(null);
-
-  useEffect(() => {
-    async function checkIP() {
-      try {
-        const res = await fetch("https://api.ipify.org?format=json");
-        const data = await res.json();
-
-        const allowedIPs = [
-          "5.77.194.211" 
-        ];
-
-        setAllowed(allowedIPs.includes(data.ip));
-      } catch {
-        setAllowed(false);
-      }
-    }
-
-    checkIP();
-  }, []);
-
-  if (allowed === null) {
-    return <h1>Checking access...</h1>;
-  }
-
-  if (!allowed) {
-    return (
-      <div
-        style={{
-          height: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          fontSize: "24px"
-        }}
-      >
-        Access Denied
-      </div>
-    );
-  }
-
-  return children;
-}
 
 const cardVariants = {
   hidden:  { opacity: 0, y: 32, scale: 0.97 },
