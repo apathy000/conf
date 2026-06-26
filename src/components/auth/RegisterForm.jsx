@@ -288,7 +288,7 @@ export default function RegisterForm() {
                       id="profession" name="profession"
                       value={form.profession} onChange={handleChange}
                     >
-                      <option value="">Select profession…</option>
+                      <option value="">Select profession</option>
                       {PROFESSIONS.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                   </div>
@@ -302,7 +302,7 @@ export default function RegisterForm() {
                       id="grade" name="grade"
                       value={form.grade} onChange={handleChange}
                     >
-                      <option value="">Select grade…</option>
+                      <option value="">Select grade</option>
                       {GRADES.map(g => <option key={g} value={g}>{g}</option>)}
                     </select>
                   </div>
