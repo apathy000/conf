@@ -68,10 +68,17 @@ export default function RegisterForm() {
 
   const [ipStatus, setIpStatus] = useState("checking");
   const [userIP,   setUserIP  ] = useState("");
-  const [form, setForm] = useState({ firstName:"", lastName:"", email:"", classGrade:"", password:"" });
-  const [loading,  setLoading ] = useState(false);
-  const [error,    setError   ] = useState("");
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    classGrade: "",
+    password: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error,   setError  ] = useState("");
 
+  // ── IP check ────────────────────────────────────────────────────
   useEffect(() => {
     fetch("https://api.ipify.org?format=json")
       .then(r => r.json())
@@ -91,30 +98,66 @@ export default function RegisterForm() {
     setError("");
   };
 
+  // ── Submit ───────────────────────────────────────────────────────
   const handleSubmit = async e => {
     e.preventDefault();
+
+    // client-side validation
     if (!form.firstName || !form.lastName || !form.email || !form.classGrade || !form.password) {
-      setError("Please fill in all fields."); return;
+      setError("Please fill in all fields.");
+      return;
     }
     if (!form.email.endsWith("@lpfa.am")) {
-      setError("Only @lpfa.am school emails are allowed."); return;
+      setError("Only @lpfa.am school emails are allowed.");
+      return;
     }
     if (form.password.length < 8) {
-      setError("Password must be at least 8 characters."); return;
+      setError("Password must be at least 8 characters.");
+      return;
     }
+
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1400));
+
+    // 1. Create the auth account (email + password)
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.password,
+    });
+
+    if (signUpError) {
+      setError(signUpError.message);
+      setLoading(false);
+      return;
+    }
+
+    // 2. Save extra info (name, class) in the users table
+    const { error: profileError } = await supabase
+      .from("users")
+      .insert({
+        id: data.user.id,
+        first_name: form.firstName,
+        last_name: form.lastName,
+        class_grade: form.classGrade,
+      });
+
+    if (profileError) {
+      setError("Account created but profile save failed. Contact admin.");
+      setLoading(false);
+      return;
+    }
+
     setLoading(false);
     navigate("/login");
   };
 
+  // ── Render states ────────────────────────────────────────────────
   if (ipStatus === "checking") return <LoadingScreen />;
   if (ipStatus === "blocked")  return <BlockedScreen ip={userIP} />;
 
   return (
     <div className="page">
 
-      {/* ══ LEFT PANEL — desktop only ══════════════════════════ */}
+      {/* ══ LEFT PANEL — desktop only ══════════════════════════════ */}
       <div className="left">
         <div className="l-grid" aria-hidden="true" />
         <div className="orb orb-r" aria-hidden="true" />
@@ -160,11 +203,11 @@ export default function RegisterForm() {
         </div>
       </div>
 
-      {/* ══ RIGHT PANEL — form ══════════════════════════════════ */}
+      {/* ══ RIGHT PANEL — form ══════════════════════════════════════ */}
       <div className="right">
         <div className="form-wrap">
 
-          {/* ── Mobile hero (hidden on desktop via CSS) ── */}
+          {/* mobile hero — hidden on desktop via CSS */}
           <div className="mobile-hero">
             <div className="mobile-chip">
               <span className="mc-lp">LP</span>
@@ -181,7 +224,7 @@ export default function RegisterForm() {
             </p>
           </div>
 
-          {/* ── Desktop eyebrow + title (hidden on mobile via CSS) ── */}
+          {/* desktop header — hidden on mobile via CSS */}
           <motion.div className="eyebrow" {...up(0.08)}>
             <div className="ey-bar" />
             <span className="ey-txt">Student registration</span>
@@ -189,77 +232,98 @@ export default function RegisterForm() {
           <motion.h2 className="form-title" {...up(0.15)}>Create account</motion.h2>
           <motion.p  className="form-sub"   {...up(0.21)}>Join the LPFA student network</motion.p>
 
-          {/* ── Form fields — wrapped for mobile card feel ── */}
+          {/* form body */}
           <div className="mobile-form-body">
-
             <form onSubmit={handleSubmit} noValidate>
 
+              {/* Name row */}
               <motion.div className="f-row" {...up(0.27)}>
                 <div className="field" style={{ marginBottom: 0 }}>
                   <label htmlFor="firstName">First name</label>
                   <div className="in-wrap">
                     <span className="in-ico"><UserIcon /></span>
-                    <input id="firstName" name="firstName" type="text"
+                    <input
+                      id="firstName" name="firstName" type="text"
                       placeholder="Armen" autoComplete="given-name"
-                      value={form.firstName} onChange={handleChange} />
+                      value={form.firstName} onChange={handleChange}
+                    />
                   </div>
                 </div>
                 <div className="field" style={{ marginBottom: 0 }}>
                   <label htmlFor="lastName">Last name</label>
                   <div className="in-wrap">
                     <span className="in-ico"><UserIcon /></span>
-                    <input id="lastName" name="lastName" type="text"
+                    <input
+                      id="lastName" name="lastName" type="text"
                       placeholder="Petrosyan" autoComplete="family-name"
-                      value={form.lastName} onChange={handleChange} />
+                      value={form.lastName} onChange={handleChange}
+                    />
                   </div>
                 </div>
               </motion.div>
 
+              {/* Email */}
               <motion.div className="field" {...up(0.33)}>
                 <label htmlFor="email">School email</label>
                 <div className="in-wrap">
                   <span className="in-ico"><MailIcon /></span>
-                  <input id="email" name="email" type="email"
+                  <input
+                    id="email" name="email" type="email"
                     placeholder="name@lpfa.am" autoComplete="email"
-                    value={form.email} onChange={handleChange} />
+                    value={form.email} onChange={handleChange}
+                  />
                 </div>
               </motion.div>
 
+              {/* Class */}
               <motion.div className="field" {...up(0.39)}>
                 <label htmlFor="classGrade">Class / Grade</label>
                 <div className="in-wrap">
                   <span className="in-ico"><SchoolIcon /></span>
-                  <select id="classGrade" name="classGrade"
-                    value={form.classGrade} onChange={handleChange}>
+                  <select
+                    id="classGrade" name="classGrade"
+                    value={form.classGrade} onChange={handleChange}
+                  >
                     <option value="">Select your class…</option>
                     {CLASSES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
               </motion.div>
 
+              {/* Password */}
               <motion.div className="field" {...up(0.45)}>
                 <label htmlFor="password">Password</label>
                 <div className="in-wrap">
                   <span className="in-ico"><LockIcon /></span>
-                  <input id="password" name="password" type="password"
+                  <input
+                    id="password" name="password" type="password"
                     placeholder="Min. 8 characters" autoComplete="new-password"
-                    value={form.password} onChange={handleChange} />
+                    value={form.password} onChange={handleChange}
+                  />
                 </div>
               </motion.div>
 
+              {/* Error message */}
               <AnimatePresence>
                 {error && (
-                  <motion.p className="err-msg"
-                    initial={{ opacity:0, y:-6 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }}>
+                  <motion.p
+                    className="err-msg"
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                  >
                     {error}
                   </motion.p>
                 )}
               </AnimatePresence>
 
-              <motion.button className="btn-submit" type="submit" disabled={loading}
+              {/* Submit */}
+              <motion.button
+                className="btn-submit" type="submit" disabled={loading}
                 {...up(0.51)}
-                whileHover={{ y:-2, scale:1.01 }}
-                whileTap={{ scale:0.98 }}>
+                whileHover={{ y: -2, scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+              >
                 {loading ? <Spinner size={18} /> : <>Create account <ArrowIcon /></>}
               </motion.button>
 
@@ -277,7 +341,7 @@ export default function RegisterForm() {
   );
 }
 
-/* ── Icons ─────────────────────────────────────────────────────── */
+/* ── Icons ──────────────────────────────────────────────────────────── */
 const UserIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
