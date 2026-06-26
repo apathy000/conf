@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../../lib/supabase";
 
 const ALLOWED_IPS = [
   "5.77.194.211",
