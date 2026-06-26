@@ -7,10 +7,12 @@ const ALLOWED_IPS = [
   "5.77.194.211",
 ];
 
-const CLASSES = [
-  "10th grade — A", "10th grade — B",
-  "11th grade — A", "11th grade — B",
-  "12th grade — A", "12th grade — B",
+const PROFESSIONS = [
+  "TT", "Management", "Marketing", "Insurance", "Finance", "Accounting"
+];
+
+const GRADES = [
+  "1", "2", "3", "4"
 ];
 
 const up = (delay = 0) => ({
@@ -72,7 +74,8 @@ export default function RegisterForm() {
     firstName: "",
     lastName: "",
     email: "",
-    classGrade: "",
+    profession: "",
+    grade: "",
     password: "",
   });
   const [loading, setLoading] = useState(false);
@@ -103,7 +106,7 @@ export default function RegisterForm() {
     e.preventDefault();
 
     // client-side validation
-    if (!form.firstName || !form.lastName || !form.email || !form.classGrade || !form.password) {
+    if (!form.firstName || !form.lastName || !form.email || !form.profession || !form.grade || !form.password) {
       setError("Please fill in all fields.");
       return;
     }
@@ -137,7 +140,7 @@ export default function RegisterForm() {
         id: data.user.id,
         first_name: form.firstName,
         last_name: form.lastName,
-        class_grade: form.classGrade,
+        class_grade: `${form.profession} — Grade ${form.grade}`,
       });
 
     if (profileError) {
@@ -275,18 +278,34 @@ export default function RegisterForm() {
                 </div>
               </motion.div>
 
-              {/* Class */}
-              <motion.div className="field" {...up(0.39)}>
-                <label htmlFor="classGrade">Class / Grade</label>
-                <div className="in-wrap">
-                  <span className="in-ico"><SchoolIcon /></span>
-                  <select
-                    id="classGrade" name="classGrade"
-                    value={form.classGrade} onChange={handleChange}
-                  >
-                    <option value="">Select your class…</option>
-                    {CLASSES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
+              {/* Profession & Grade Row */}
+              <motion.div className="f-row" {...up(0.39)}>
+                <div className="field" style={{ marginBottom: 0 }}>
+                  <label htmlFor="profession">Profession / Faculty</label>
+                  <div className="in-wrap">
+                    <span className="in-ico"><SchoolIcon /></span>
+                    <select
+                      id="profession" name="profession"
+                      value={form.profession} onChange={handleChange}
+                    >
+                      <option value="">Select profession…</option>
+                      {PROFESSIONS.map(p => <option key={p} value={p}>{p}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="field" style={{ marginBottom: 0 }}>
+                  <label htmlFor="grade">Grade / Year</label>
+                  <div className="in-wrap">
+                    <span className="in-ico"><SchoolIcon /></span>
+                    <select
+                      id="grade" name="grade"
+                      value={form.grade} onChange={handleChange}
+                    >
+                      <option value="">Select grade…</option>
+                      {GRADES.map(g => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                  </div>
                 </div>
               </motion.div>
 
