@@ -5,7 +5,6 @@ import { supabase } from "../../lib/supabase";
 
 const ALLOWED_IPS = [
   "5.77.194.211",
-
 ];
 
 const CLASSES = [
