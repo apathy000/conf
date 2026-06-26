@@ -2,15 +2,9 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 
-// ─────────────────────────────────────────────────────────────────────
-//  🔒  YOUR SCHOOL WI-FI IP
-//  How to find it: connect to school Wi-Fi → open the site
-//  → press F12 → Console tab → look for "Your public IP: ..."
-// ─────────────────────────────────────────────────────────────────────
 const ALLOWED_IPS = [
   "5.77.194.211",
 ];
-// ─────────────────────────────────────────────────────────────────────
 
 const CLASSES = [
   "10th grade — A", "10th grade — B",
@@ -108,11 +102,6 @@ export default function RegisterForm() {
       setError("Password must be at least 8 characters."); return;
     }
     setLoading(true);
-    // TODO: replace with Supabase:
-    // const { error } = await supabase.auth.signUp({
-    //   email: form.email, password: form.password,
-    //   options: { data: { firstName: form.firstName, lastName: form.lastName, classGrade: form.classGrade } }
-    // })
     await new Promise(r => setTimeout(r, 1400));
     setLoading(false);
     navigate("/login");
@@ -124,7 +113,7 @@ export default function RegisterForm() {
   return (
     <div className="page">
 
-      {/* ══ LEFT PANEL ═══════════════════════════════════════════ */}
+      {/* ══ LEFT PANEL — desktop only ══════════════════════════ */}
       <div className="left">
         <div className="l-grid" aria-hidden="true" />
         <div className="orb orb-r" aria-hidden="true" />
@@ -170,94 +159,116 @@ export default function RegisterForm() {
         </div>
       </div>
 
-      {/* ══ RIGHT PANEL ══════════════════════════════════════════ */}
+      {/* ══ RIGHT PANEL — form ══════════════════════════════════ */}
       <div className="right">
         <div className="form-wrap">
 
+          {/* ── Mobile hero (hidden on desktop via CSS) ── */}
+          <div className="mobile-hero">
+            <div className="mobile-chip">
+              <span className="mc-lp">LP</span>
+              <span className="mc-fa">FA</span>
+              <span className="mc-n">n</span>
+              <span className="mc-1">1</span>
+            </div>
+            <h1 className="mobile-headline">
+              Your school,<br /><em>your space.</em>
+            </h1>
+            <p className="mobile-sub">
+              A private space for LPFA students — confess anonymously,
+              connect with classmates, build your story.
+            </p>
+          </div>
+
+          {/* ── Desktop eyebrow + title (hidden on mobile via CSS) ── */}
           <motion.div className="eyebrow" {...up(0.08)}>
             <div className="ey-bar" />
             <span className="ey-txt">Student registration</span>
           </motion.div>
-
           <motion.h2 className="form-title" {...up(0.15)}>Create account</motion.h2>
           <motion.p  className="form-sub"   {...up(0.21)}>Join the LPFA student network</motion.p>
 
-          <form onSubmit={handleSubmit} noValidate>
+          {/* ── Form fields — wrapped for mobile card feel ── */}
+          <div className="mobile-form-body">
 
-            <motion.div className="f-row" {...up(0.27)}>
-              <div className="field" style={{ marginBottom:0 }}>
-                <label htmlFor="firstName">First name</label>
-                <div className="in-wrap">
-                  <span className="in-ico"><UserIcon /></span>
-                  <input id="firstName" name="firstName" type="text"
-                    placeholder="Armen" autoComplete="given-name"
-                    value={form.firstName} onChange={handleChange} />
+            <form onSubmit={handleSubmit} noValidate>
+
+              <motion.div className="f-row" {...up(0.27)}>
+                <div className="field" style={{ marginBottom: 0 }}>
+                  <label htmlFor="firstName">First name</label>
+                  <div className="in-wrap">
+                    <span className="in-ico"><UserIcon /></span>
+                    <input id="firstName" name="firstName" type="text"
+                      placeholder="Armen" autoComplete="given-name"
+                      value={form.firstName} onChange={handleChange} />
+                  </div>
                 </div>
-              </div>
-              <div className="field" style={{ marginBottom:0 }}>
-                <label htmlFor="lastName">Last name</label>
-                <div className="in-wrap">
-                  <span className="in-ico"><UserIcon /></span>
-                  <input id="lastName" name="lastName" type="text"
-                    placeholder="Petrosyan" autoComplete="family-name"
-                    value={form.lastName} onChange={handleChange} />
+                <div className="field" style={{ marginBottom: 0 }}>
+                  <label htmlFor="lastName">Last name</label>
+                  <div className="in-wrap">
+                    <span className="in-ico"><UserIcon /></span>
+                    <input id="lastName" name="lastName" type="text"
+                      placeholder="Petrosyan" autoComplete="family-name"
+                      value={form.lastName} onChange={handleChange} />
+                  </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
 
-            <motion.div className="field" {...up(0.33)}>
-              <label htmlFor="email">School email</label>
-              <div className="in-wrap">
-                <span className="in-ico"><MailIcon /></span>
-                <input id="email" name="email" type="email"
-                  placeholder="name@lpfa.am" autoComplete="email"
-                  value={form.email} onChange={handleChange} />
-              </div>
-            </motion.div>
+              <motion.div className="field" {...up(0.33)}>
+                <label htmlFor="email">School email</label>
+                <div className="in-wrap">
+                  <span className="in-ico"><MailIcon /></span>
+                  <input id="email" name="email" type="email"
+                    placeholder="name@lpfa.am" autoComplete="email"
+                    value={form.email} onChange={handleChange} />
+                </div>
+              </motion.div>
 
-            <motion.div className="field" {...up(0.39)}>
-              <label htmlFor="classGrade">Class / Grade</label>
-              <div className="in-wrap">
-                <span className="in-ico"><SchoolIcon /></span>
-                <select id="classGrade" name="classGrade"
-                  value={form.classGrade} onChange={handleChange}>
-                  <option value="">Select your class…</option>
-                  {CLASSES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-            </motion.div>
+              <motion.div className="field" {...up(0.39)}>
+                <label htmlFor="classGrade">Class / Grade</label>
+                <div className="in-wrap">
+                  <span className="in-ico"><SchoolIcon /></span>
+                  <select id="classGrade" name="classGrade"
+                    value={form.classGrade} onChange={handleChange}>
+                    <option value="">Select your class…</option>
+                    {CLASSES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+              </motion.div>
 
-            <motion.div className="field" {...up(0.45)}>
-              <label htmlFor="password">Password</label>
-              <div className="in-wrap">
-                <span className="in-ico"><LockIcon /></span>
-                <input id="password" name="password" type="password"
-                  placeholder="Min. 8 characters" autoComplete="new-password"
-                  value={form.password} onChange={handleChange} />
-              </div>
-            </motion.div>
+              <motion.div className="field" {...up(0.45)}>
+                <label htmlFor="password">Password</label>
+                <div className="in-wrap">
+                  <span className="in-ico"><LockIcon /></span>
+                  <input id="password" name="password" type="password"
+                    placeholder="Min. 8 characters" autoComplete="new-password"
+                    value={form.password} onChange={handleChange} />
+                </div>
+              </motion.div>
 
-            <AnimatePresence>
-              {error && (
-                <motion.p className="err-msg"
-                  initial={{ opacity:0, y:-6 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }}>
-                  {error}
-                </motion.p>
-              )}
-            </AnimatePresence>
+              <AnimatePresence>
+                {error && (
+                  <motion.p className="err-msg"
+                    initial={{ opacity:0, y:-6 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }}>
+                    {error}
+                  </motion.p>
+                )}
+              </AnimatePresence>
 
-            <motion.button className="btn-submit" type="submit" disabled={loading}
-              {...up(0.51)}
-              whileHover={{ y:-2, scale:1.01 }}
-              whileTap={{ scale:0.98 }}>
-              {loading ? <Spinner size={18} /> : <>Create account <ArrowIcon /></>}
-            </motion.button>
+              <motion.button className="btn-submit" type="submit" disabled={loading}
+                {...up(0.51)}
+                whileHover={{ y:-2, scale:1.01 }}
+                whileTap={{ scale:0.98 }}>
+                {loading ? <Spinner size={18} /> : <>Create account <ArrowIcon /></>}
+              </motion.button>
 
-          </form>
+            </form>
 
-          <motion.p className="form-foot" {...up(0.57)}>
-            Already have an account? <Link to="/login">Sign in</Link>
-          </motion.p>
+            <motion.p className="form-foot" {...up(0.57)}>
+              Already have an account? <Link to="/login">Sign in</Link>
+            </motion.p>
+
+          </div>{/* end mobile-form-body */}
 
         </div>
       </div>
@@ -265,7 +276,7 @@ export default function RegisterForm() {
   );
 }
 
-/* ── Icons ─────────────────────────────────────────────────────────── */
+/* ── Icons ─────────────────────────────────────────────────────── */
 const UserIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>

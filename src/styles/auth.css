@@ -16,44 +16,50 @@
   --in-bg:  rgba(255,255,255,0.033);
 }
 
-@keyframes spin     { to { transform:rotate(360deg); } }
-@keyframes floatUp  { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
-@keyframes lineIn   { from{transform:scaleX(0)} to{transform:scaleX(1)} }
-@keyframes orbR     { 0%,100%{opacity:.2;transform:scale(1)} 50%{opacity:.32;transform:scale(1.1) translate(14px,-12px)} }
-@keyframes orbB     { 0%,100%{opacity:.16;transform:scale(1)} 50%{opacity:.26;transform:scale(1.08) translate(-10px,10px)} }
-@keyframes gridDrift{ to{transform:translateY(-32px)} }
-@keyframes pulse    { 0%,100%{opacity:1} 50%{opacity:.35} }
-@keyframes shimmer  { from{transform:translateX(-100%)} to{transform:translateX(200%)} }
+@keyframes spin      { to { transform:rotate(360deg); } }
+@keyframes floatUp   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes lineIn    { from{transform:scaleX(0)} to{transform:scaleX(1)} }
+@keyframes orbR      { 0%,100%{opacity:.2;transform:scale(1)} 50%{opacity:.3;transform:scale(1.1) translate(12px,-10px)} }
+@keyframes orbB      { 0%,100%{opacity:.14;transform:scale(1)} 50%{opacity:.22;transform:scale(1.08) translate(-8px,8px)} }
+@keyframes gridDrift { to{transform:translateY(-32px)} }
+@keyframes pulse     { 0%,100%{opacity:1} 50%{opacity:.3} }
+@keyframes fadeIn    { from{opacity:0} to{opacity:1} }
 
-body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+body {
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  /* prevent iOS bounce ruining the bg */
+  overscroll-behavior:none;
+}
 
-/* ── PAGE SPLIT ─────────────────────────────────────── */
+/* ════════════════════════════════════════════
+   DESKTOP — two-column split
+════════════════════════════════════════════ */
 .page {
   min-height:100vh;
   display:grid;
   grid-template-columns:1.1fr 1fr;
 }
 
-/* ── LEFT PANEL ─────────────────────────────────────── */
+/* ── LEFT PANEL (desktop only) ──────────────────── */
 .left {
   position:relative; overflow:hidden;
   display:flex; flex-direction:column; justify-content:space-between;
   padding:56px 64px;
   background:linear-gradient(150deg,#07091c 0%,#0c1230 60%,#0e1a38 100%);
 }
-
 .left::after {
   content:''; position:absolute; top:0; right:0; bottom:0; width:1px;
-  background:linear-gradient(to bottom,transparent,rgba(255,255,255,0.07) 25%,rgba(255,255,255,0.07) 75%,transparent);
+  background:linear-gradient(to bottom,transparent,rgba(255,255,255,.07) 25%,rgba(255,255,255,.07) 75%,transparent);
 }
-
 .l-grid {
   position:absolute; inset:-32px; pointer-events:none;
-  background-image:radial-gradient(circle,rgba(255,255,255,0.052) 1px,transparent 1px);
+  background-image:radial-gradient(circle,rgba(255,255,255,.052) 1px,transparent 1px);
   background-size:28px 28px;
   animation:gridDrift 9s linear infinite;
 }
-
 .orb { position:absolute; border-radius:50%; pointer-events:none; }
 .orb-r {
   width:500px; height:500px;
@@ -67,16 +73,14 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
   bottom:-170px; right:-140px;
   animation:orbB 13s ease-in-out infinite;
 }
-
 .l-top,.l-bot { position:relative; z-index:2; }
 .l-top { animation:floatUp .7s .05s both; }
 .l-bot { animation:floatUp .7s .2s both; }
 
 .chip {
   display:inline-flex; align-items:center; gap:4px;
-  background:rgba(255,255,255,0.048); border:1px solid var(--bord2);
-  border-radius:14px; padding:10px 20px;
-  backdrop-filter:blur(16px);
+  background:rgba(255,255,255,.048); border:1px solid var(--bord2);
+  border-radius:14px; padding:10px 20px; backdrop-filter:blur(16px);
   margin-bottom:56px;
 }
 .c-lp { font-family:'Syne',sans-serif; font-weight:800; font-size:19px; color:#fff; font-style:italic; }
@@ -95,24 +99,19 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
   background:linear-gradient(90deg,var(--red-hi),#f07565);
   -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
 }
-.sub-text {
-  font-size:15px; font-weight:300; color:var(--muted); line-height:1.72; max-width:300px;
-}
+.sub-text { font-size:15px; font-weight:300; color:var(--muted); line-height:1.72; max-width:300px; }
 
 .stat-cards { display:flex; flex-direction:column; gap:11px; }
 .stat-card {
   display:flex; align-items:center; gap:16px;
-  background:rgba(255,255,255,0.028); border:1px solid var(--bord);
-  border-radius:16px; padding:17px 22px;
-  backdrop-filter:blur(18px);
+  background:rgba(255,255,255,.028); border:1px solid var(--bord);
+  border-radius:16px; padding:17px 22px; backdrop-filter:blur(18px);
   transition:border-color .3s;
 }
-.stat-card:hover { border-color:rgba(255,255,255,0.14); }
-
-.dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.stat-card:hover { border-color:rgba(255,255,255,.14); }
+.dot   { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
 .dot-r { background:var(--red-hi); box-shadow:0 0 9px rgba(224,69,53,.7); animation:pulse 2.2s ease-in-out infinite; }
 .dot-b { background:#5a9de0; box-shadow:0 0 9px rgba(90,157,224,.6); animation:pulse 3s ease-in-out infinite .5s; }
-
 .sc-label { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:rgba(255,255,255,.8); }
 .sc-sub   { font-size:12px; font-weight:300; color:var(--muted); margin-top:2px; }
 
@@ -123,10 +122,11 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
   font-size:12px; font-weight:500; color:#7aace8;
 }
 
-/* ── RIGHT PANEL ────────────────────────────────────── */
+/* ── RIGHT PANEL ────────────────────────────────── */
 .right {
   display:flex; align-items:center; justify-content:center;
-  padding:56px 68px; background:var(--surf); position:relative; overflow:hidden;
+  padding:56px 68px; background:var(--surf);
+  position:relative; overflow:hidden;
 }
 .right::before {
   content:''; position:absolute; top:-70px; right:-70px;
@@ -147,18 +147,17 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 .ey-bar  { width:22px; height:2px; background:var(--red-hi); border-radius:2px; transform-origin:left; animation:lineIn .6s .5s both; }
 .ey-txt  { font-family:'Syne',sans-serif; font-size:10px; font-weight:700; color:var(--red-hi); text-transform:uppercase; letter-spacing:2.5px; }
 
-.form-title { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; letter-spacing:-0.9px; color:var(--text); margin-bottom:6px; animation:floatUp .5s .18s both; }
+.form-title { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; letter-spacing:-.9px; color:var(--text); margin-bottom:6px; animation:floatUp .5s .18s both; }
 .form-sub   { font-size:13.5px; font-weight:300; color:var(--muted); margin-bottom:28px; animation:floatUp .5s .24s both; }
 
-.f-row  { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:13px; }
-.field  { margin-bottom:13px; }
-
+/* fields */
+.f-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:13px; }
+.field { margin-bottom:13px; }
 .field label {
   display:block; font-family:'Syne',sans-serif;
   font-size:10px; font-weight:700; color:rgba(255,255,255,.26);
   text-transform:uppercase; letter-spacing:1.4px; margin-bottom:7px;
 }
-
 .in-wrap { position:relative; }
 .in-ico  {
   position:absolute; left:13px; top:50%; transform:translateY(-50%);
@@ -166,7 +165,6 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
   display:flex; align-items:center;
 }
 .in-wrap:focus-within .in-ico { color:var(--red-hi); }
-
 .in-wrap input,
 .in-wrap select {
   width:100%; height:46px;
@@ -198,6 +196,8 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
   cursor:pointer; display:flex; align-items:center; justify-content:center; gap:9px;
   position:relative; overflow:hidden; margin-top:4px;
   transition:background .2s;
+  /* important on mobile — remove tap highlight */
+  -webkit-tap-highlight-color:transparent;
 }
 .btn-submit::after {
   content:''; position:absolute; inset:0;
@@ -206,20 +206,22 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 }
 .btn-submit:hover { background:var(--red-hi); }
 .btn-submit:hover::after { transform:translateX(200%); }
+.btn-submit:active { background:var(--red-hi); transform:scale(0.985); }
 .btn-submit:disabled { opacity:.55; cursor:not-allowed; }
 
 .form-foot { text-align:center; margin-top:20px; font-size:13px; font-weight:300; color:var(--muted); }
 .form-foot a { color:var(--red-hi); font-weight:500; text-decoration:none; }
 .form-foot a:hover { text-decoration:underline; }
 
-/* ── BLOCKED / LOADING SCREENS ──────────────────────── */
+/* ── BLOCKED / LOADING SCREENS ──────────────────── */
 .screen-center {
   min-height:100vh; display:flex; align-items:center; justify-content:center;
-  flex-direction:column; gap:16px; background:var(--bg); font-family:'Inter',sans-serif;
+  flex-direction:column; gap:16px; background:var(--bg);
+  font-family:'Inter',sans-serif; padding:24px;
 }
 .screen-card {
   background:var(--surf); border:1px solid var(--bord); border-radius:22px;
-  padding:52px 44px; text-align:center; max-width:380px;
+  padding:52px 44px; text-align:center; width:100%; max-width:380px;
   animation:floatUp .6s both;
 }
 .screen-icon {
@@ -237,9 +239,173 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
   font-size:12px; font-weight:500; color:#7aace8;
 }
 
-/* ── RESPONSIVE ─────────────────────────────────────── */
-@media (max-width:880px) {
-  .page { grid-template-columns:1fr; }
+/* ════════════════════════════════════════════
+   MOBILE — completely different layout
+   This is what 98% of your users will see
+════════════════════════════════════════════ */
+@media (max-width:768px) {
+
+  /* hide desktop left panel */
   .left { display:none; }
-  .right { padding:40px 24px; }
+
+  /* full screen, scrollable */
+  .page {
+    grid-template-columns:1fr;
+    min-height:100vh;
+    background:var(--bg);
+  }
+
+  .right {
+    /* remove card feel — full screen immersive */
+    background:transparent;
+    padding:0;
+    align-items:flex-start;
+    min-height:100vh;
+    position:relative;
+  }
+
+  /* mobile background — orbs directly on page */
+  .right::before {
+    width:360px; height:360px;
+    top:-120px; right:-120px;
+    background:radial-gradient(circle,rgba(192,57,43,.18) 0%,transparent 70%);
+  }
+  .right::after {
+    width:300px; height:300px;
+    bottom:-80px; left:-80px;
+    background:radial-gradient(circle,rgba(27,58,107,.2) 0%,transparent 70%);
+  }
+
+  .form-wrap {
+    max-width:100%;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    padding:0;
+  }
+
+  /* ── Mobile top hero bar ── */
+  .form-wrap::before {
+    content:'';
+    display:block;
+    height:3px;
+    background:linear-gradient(90deg, var(--red), var(--navy));
+    width:100%;
+    flex-shrink:0;
+  }
+
+  /* ── Mobile header section ── */
+  .eyebrow {
+    margin-bottom:0;
+    animation:none;
+  }
+
+  /* wrap eyebrow + title + sub in a hero block */
+  .mobile-hero {
+    background:linear-gradient(160deg,#08091f 0%,#0d1432 100%);
+    padding:32px 24px 36px;
+    position:relative;
+    overflow:hidden;
+    flex-shrink:0;
+  }
+
+  /* dot grid on mobile hero */
+  .mobile-hero::before {
+    content:'';
+    position:absolute; inset:0;
+    background-image:radial-gradient(circle,rgba(255,255,255,.04) 1px,transparent 1px);
+    background-size:24px 24px;
+    pointer-events:none;
+  }
+
+  /* mobile logo chip inside hero */
+  .mobile-chip {
+    display:inline-flex; align-items:center; gap:4px;
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1);
+    border-radius:12px; padding:8px 16px; backdrop-filter:blur(12px);
+    margin-bottom:24px;
+  }
+  .mc-lp { font-family:'Syne',sans-serif; font-weight:800; font-size:16px; color:#fff; font-style:italic; }
+  .mc-fa { font-family:'Syne',sans-serif; font-weight:800; font-size:16px; color:var(--red-hi); font-style:italic; }
+  .mc-n  { font-family:'Syne',sans-serif; font-weight:700; font-size:11px; color:rgba(255,255,255,.34); font-style:italic; margin-left:2px; }
+  .mc-1  { font-family:'Syne',sans-serif; font-weight:800; font-size:18px; color:var(--red-hi); line-height:1; }
+
+  .mobile-headline {
+    font-family:'Syne',sans-serif;
+    font-size:32px; font-weight:800;
+    line-height:1.06; letter-spacing:-1.5px;
+    color:#fff; margin-bottom:10px;
+    position:relative; z-index:1;
+  }
+  .mobile-headline em {
+    font-style:normal;
+    background:linear-gradient(90deg,var(--red-hi),#f07565);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  }
+  .mobile-sub {
+    font-size:13.5px; font-weight:300; color:var(--muted);
+    line-height:1.65; position:relative; z-index:1;
+    max-width:300px;
+  }
+
+  /* ── Mobile form body ── */
+  .mobile-form-body {
+    flex:1;
+    padding:28px 20px 40px;
+    background:var(--surf);
+    border-radius:24px 24px 0 0;
+    margin-top:-16px; /* overlap the hero slightly */
+    position:relative;
+    z-index:2;
+  }
+
+  /* pull handle indicator */
+  .mobile-form-body::before {
+    content:'';
+    display:block;
+    width:36px; height:4px;
+    background:rgba(255,255,255,.1);
+    border-radius:2px;
+    margin:0 auto 24px;
+  }
+
+  /* on mobile, name fields stack vertically */
+  .f-row { grid-template-columns:1fr; gap:0; margin-bottom:0; }
+
+  /* bigger touch targets on mobile */
+  .in-wrap input,
+  .in-wrap select {
+    height:52px;
+    font-size:15px;
+    border-radius:14px;
+  }
+
+  .field label { font-size:11px; margin-bottom:8px; }
+  .field { margin-bottom:16px; }
+
+  /* bigger button — thumb-friendly */
+  .btn-submit {
+    height:56px;
+    font-size:16px;
+    border-radius:14px;
+    margin-top:8px;
+  }
+
+  .form-foot { margin-top:24px; font-size:14px; padding-bottom:16px; }
+
+  /* eyebrow hidden on mobile (headline takes over) */
+  .eyebrow,
+  .form-title,
+  .form-sub { display:none; }
+
+  /* screen cards on mobile */
+  .screen-card { padding:40px 28px; border-radius:20px; }
+  .screen-title { font-size:20px; }
+}
+
+/* very small phones */
+@media (max-width:380px) {
+  .mobile-hero { padding:28px 18px 32px; }
+  .mobile-form-body { padding:24px 16px 36px; }
+  .mobile-headline { font-size:28px; }
 }
