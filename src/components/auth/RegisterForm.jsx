@@ -102,7 +102,7 @@ export default function RegisterForm() {
 
     setLoading(true);
 
-    const fakeEmail = `${form.username.toLowerCase().trim()}@lpfaconf.internal`;
+    const fakeEmail = `${form.username.toLowerCase().trim()}@lpfaconf.com`;
 
     const { data, error: signUpError } = await supabase.auth.signUp({
       email:    fakeEmail,

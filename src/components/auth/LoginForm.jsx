@@ -85,7 +85,7 @@ export default function LoginForm() {
     }
     setLoading(true);
 
-    const fakeEmail = `${form.username.toLowerCase().trim()}@lpfaconf.internal`;
+    const fakeEmail = `${form.username.toLowerCase().trim()}@lpfaconf.com`;
 
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email:    fakeEmail,
