@@ -228,6 +228,16 @@ body {
 }
 .in-wrap:focus-within .in-ico { color: var(--red-hi); }
 
+/* eye button inside password field */
+.eye-btn {
+  position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; padding: 0;
+  color: var(--hint); cursor: pointer;
+  display: flex; align-items: center;
+  transition: color .2s;
+}
+.eye-btn:hover { color: var(--text); }
+
 .in-wrap input,
 .in-wrap select {
   width: 100%; height: 46px;

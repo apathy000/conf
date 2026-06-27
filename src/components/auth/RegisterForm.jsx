@@ -3,9 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 
-const ALLOWED_IPS = ["5.77.194.211",
-    
-];
+const ALLOWED_IPS = ["5.77.194.211"];
 
 const PROFESSIONS = ["TT", "Management", "Marketing", "Insurance", "Finance", "Accounting"];
 const GRADES      = ["1", "2", "3", "4"];
@@ -56,8 +54,9 @@ function BlockedScreen({ ip }) {
 export default function RegisterForm() {
   const navigate = useNavigate();
 
-  const [ipStatus, setIpStatus] = useState("checking");
-  const [userIP,   setUserIP  ] = useState("");
+  const [ipStatus,    setIpStatus   ] = useState("checking");
+  const [userIP,      setUserIP     ] = useState("");
+  const [showPass,    setShowPass   ] = useState(false);
   const [form, setForm] = useState({
     firstName:  "",
     lastName:   "",
@@ -269,14 +268,28 @@ export default function RegisterForm() {
                 </div>
               </motion.div>
 
-              {/* Password */}
+              {/* Password — with eye toggle */}
               <motion.div className="field" {...up(0.45)}>
                 <label htmlFor="password">Password</label>
                 <div className="in-wrap">
                   <span className="in-ico"><LockIcon /></span>
-                  <input id="password" name="password" type="password"
-                    placeholder="Min. 8 characters" autoComplete="new-password"
-                    value={form.password} onChange={handleChange} />
+                  <input
+                    id="password" name="password"
+                    type={showPass ? "text" : "password"}
+                    placeholder="Min. 8 characters"
+                    autoComplete="new-password"
+                    value={form.password} onChange={handleChange}
+                    style={{ paddingRight: 44 }}
+                  />
+                  <button
+                    type="button"
+                    className="eye-btn"
+                    onClick={() => setShowPass(p => !p)}
+                    tabIndex={-1}
+                    aria-label={showPass ? "Hide password" : "Show password"}
+                  >
+                    {showPass ? <EyeOffIcon /> : <EyeIcon />}
+                  </button>
                 </div>
               </motion.div>
 
@@ -321,6 +334,18 @@ const AtIcon = () => (
 const LockIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+  </svg>
+);
+const EyeIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+  </svg>
+);
+const EyeOffIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+    <line x1="1" y1="1" x2="23" y2="23"/>
   </svg>
 );
 const SchoolIcon = () => (
