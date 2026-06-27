@@ -80,14 +80,11 @@ export default function LoginForm() {
 
   const handleSubmit = async e => {
     e.preventDefault();
-
     if (!form.username || !form.password) {
       setError("Please fill in all fields."); return;
     }
-
     setLoading(true);
 
-    // rebuild the same fake email we created during registration
     const fakeEmail = `${form.username.toLowerCase().trim()}@lpfaconf.internal`;
 
     const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -102,7 +99,7 @@ export default function LoginForm() {
     }
 
     setLoading(false);
-    navigate("/feed"); // ← will build this next
+    navigate("/feed");
   };
 
   if (ipStatus === "checking") return <LoadingScreen />;
@@ -116,25 +113,32 @@ export default function LoginForm() {
         <div className="l-grid" aria-hidden="true" />
         <div className="orb orb-r" aria-hidden="true" />
         <div className="orb orb-b" aria-hidden="true" />
+
         <div className="l-top">
           <div className="chip">
-            <span className="c-lp">LP</span><span className="c-fa">FA</span>
-            <span className="c-n">n</span><span className="c-1">1</span>
+            <img src="/images.jpg" alt="LPFA" className="chip-logo" />
           </div>
-          <h1 className="headline">Welcome<br /><em>back.</em></h1>
+          <h1 className="headline"><em>LPFA</em> conf</h1>
           <p className="sub-text">
             Your confessions, your classmates, your stories — all waiting for you.
           </p>
         </div>
+
         <div className="l-bot">
           <div className="stat-cards">
             <div className="stat-card">
               <div className="dot dot-r" />
-              <div><div className="sc-label">Confessions</div><div className="sc-sub">Post anonymously or as yourself</div></div>
+              <div>
+                <div className="sc-label">Confessions</div>
+                <div className="sc-sub">Post anonymously or as yourself</div>
+              </div>
             </div>
             <div className="stat-card">
               <div className="dot dot-b" />
-              <div><div className="sc-label">Student profiles</div><div className="sc-sub">Your class, your identity</div></div>
+              <div>
+                <div className="sc-label">Student profiles</div>
+                <div className="sc-sub">Your class, your identity</div>
+              </div>
             </div>
           </div>
           <div className="wifi-pill"><WifiIcon size={13} />School network only</div>
@@ -145,17 +149,18 @@ export default function LoginForm() {
       <div className="right">
         <div className="form-wrap">
 
+          {/* mobile hero */}
           <div className="mobile-hero">
             <div className="mobile-chip">
-              <span className="mc-lp">LP</span><span className="mc-fa">FA</span>
-              <span className="mc-n">n</span><span className="mc-1">1</span>
+              <img src="/images.jpg" alt="LPFA" className="chip-logo" />
             </div>
-            <h1 className="mobile-headline">Welcome<br /><em>back.</em></h1>
+            <h1 className="mobile-headline"><em>LPFA</em> conf</h1>
             <p className="mobile-sub">
               Your confessions, your classmates, your stories — all waiting for you.
             </p>
           </div>
 
+          {/* desktop header */}
           <motion.div className="eyebrow" {...up(0.08)}>
             <div className="ey-bar" /><span className="ey-txt">Student login</span>
           </motion.div>

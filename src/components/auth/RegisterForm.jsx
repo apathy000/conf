@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 
 const ALLOWED_IPS = ["5.77.194.211",
-  "178.78.135.41",
+    "178.78.135.41",
 ];
 
 const PROFESSIONS = ["TT", "Management", "Marketing", "Insurance", "Finance", "Accounting"];
@@ -103,8 +103,6 @@ export default function RegisterForm() {
 
     setLoading(true);
 
-    // Supabase auth requires an email — we build a fake internal one from username
-    // The user never sees or uses this email, it's just for Supabase internally
     const fakeEmail = `${form.username.toLowerCase().trim()}@lpfaconf.internal`;
 
     const { data, error: signUpError } = await supabase.auth.signUp({
@@ -153,26 +151,33 @@ export default function RegisterForm() {
         <div className="l-grid" aria-hidden="true" />
         <div className="orb orb-r" aria-hidden="true" />
         <div className="orb orb-b" aria-hidden="true" />
+
         <div className="l-top">
           <div className="chip">
-            <span className="c-lp">LP</span><span className="c-fa">FA</span>
-            <span className="c-n">n</span><span className="c-1">1</span>
+            <img src="/images.jpg" alt="LPFA" className="chip-logo" />
           </div>
-          <h1 className="headline">Your school,<br /><em>your space.</em></h1>
+          <h1 className="headline"><em>LPFA</em> conf</h1>
           <p className="sub-text">
             A private space for LPFA students — confess anonymously,
             connect with classmates, build your story.
           </p>
         </div>
+
         <div className="l-bot">
           <div className="stat-cards">
             <div className="stat-card">
               <div className="dot dot-r" />
-              <div><div className="sc-label">Confessions</div><div className="sc-sub">Post anonymously or as yourself</div></div>
+              <div>
+                <div className="sc-label">Confessions</div>
+                <div className="sc-sub">Post anonymously or as yourself</div>
+              </div>
             </div>
             <div className="stat-card">
               <div className="dot dot-b" />
-              <div><div className="sc-label">Student profiles</div><div className="sc-sub">Your class, your identity</div></div>
+              <div>
+                <div className="sc-label">Student profiles</div>
+                <div className="sc-sub">Your class, your identity</div>
+              </div>
             </div>
           </div>
           <div className="wifi-pill"><WifiIcon size={13} />School network only</div>
@@ -183,18 +188,19 @@ export default function RegisterForm() {
       <div className="right">
         <div className="form-wrap">
 
+          {/* mobile hero */}
           <div className="mobile-hero">
             <div className="mobile-chip">
-              <span className="mc-lp">LP</span><span className="mc-fa">FA</span>
-              <span className="mc-n">n</span><span className="mc-1">1</span>
+              <img src="/images.jpg" alt="LPFA" className="chip-logo" />
             </div>
-            <h1 className="mobile-headline">Your school,<br /><em>your space.</em></h1>
+            <h1 className="mobile-headline"><em>LPFA</em> conf</h1>
             <p className="mobile-sub">
               A private space for LPFA students — confess anonymously,
               connect with classmates, build your story.
             </p>
           </div>
 
+          {/* desktop header */}
           <motion.div className="eyebrow" {...up(0.08)}>
             <div className="ey-bar" /><span className="ey-txt">Student registration</span>
           </motion.div>
