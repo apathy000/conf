@@ -5,6 +5,7 @@ import { supabase } from "../../lib/supabase";
 
 const ALLOWED_IPS = ["5.77.194.211",
     "178.78.135.41",
+    "178.78.132.97",
 ];
 
 const PROFESSIONS = ["TT", "Management", "Marketing", "Insurance", "Finance", "Accounting"];
