@@ -3,7 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 
-const ALLOWED_IPS = ["5.77.194.211"];
+const ALLOWED_IPS = ["5.77.194.211",
+    "178.78.135.41",
+];
 
 const up = (delay = 0) => ({
   initial:    { opacity: 0, y: 18 },
