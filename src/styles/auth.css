@@ -89,6 +89,13 @@ body {
   backdrop-filter: blur(16px);
   margin-bottom: 52px;
 }
+
+.chip-logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  border-radius: 6px;
+}
 .c-lp { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 19px; color: #fff; font-style: italic; }
 .c-fa { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 19px; color: var(--red-hi); font-style: italic; }
 .c-n  { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px; color: rgba(255,255,255,.34); font-style: italic; margin-left: 3px; }
