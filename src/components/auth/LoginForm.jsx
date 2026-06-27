@@ -5,9 +5,6 @@ import { supabase } from "../../lib/supabase";
 
 const ALLOWED_IPS = ["5.77.194.211"];
 
-const PROFESSIONS = ["TT", "Management", "Marketing", "Insurance", "Finance", "Accounting"];
-const GRADES      = ["1", "2", "3", "4"];
-
 const up = (delay = 0) => ({
   initial:    { opacity: 0, y: 18 },
   animate:    { opacity: 1, y: 0 },
@@ -51,19 +48,12 @@ function BlockedScreen({ ip }) {
   );
 }
 
-export default function RegisterForm() {
+export default function LoginForm() {
   const navigate = useNavigate();
 
   const [ipStatus, setIpStatus] = useState("checking");
   const [userIP,   setUserIP  ] = useState("");
-  const [form, setForm] = useState({
-    firstName:  "",
-    lastName:   "",
-    username:   "",
-    profession: "",
-    grade:      "",
-    password:   "",
-  });
+  const [form, setForm] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error,   setError  ] = useState("");
 
@@ -89,55 +79,28 @@ export default function RegisterForm() {
   const handleSubmit = async e => {
     e.preventDefault();
 
-    if (!form.firstName || !form.lastName || !form.username || !form.profession || !form.grade || !form.password) {
+    if (!form.username || !form.password) {
       setError("Please fill in all fields."); return;
-    }
-    if (form.username.length < 3) {
-      setError("Username must be at least 3 characters."); return;
-    }
-    if (form.password.length < 8) {
-      setError("Password must be at least 8 characters."); return;
     }
 
     setLoading(true);
 
-    // Supabase auth requires an email — we build a fake internal one from username
-    // The user never sees or uses this email, it's just for Supabase internally
+    // rebuild the same fake email we created during registration
     const fakeEmail = `${form.username.toLowerCase().trim()}@lpfaconf.internal`;
 
-    const { data, error: signUpError } = await supabase.auth.signUp({
+    const { error: signInError } = await supabase.auth.signInWithPassword({
       email:    fakeEmail,
       password: form.password,
     });
 
-    if (signUpError) {
-      setError(
-        signUpError.message.includes("already registered")
-          ? "This username is already taken."
-          : signUpError.message
-      );
-      setLoading(false);
-      return;
-    }
-
-    const { error: profileError } = await supabase
-      .from("users")
-      .insert({
-        id:          data.user.id,
-        first_name:  form.firstName,
-        last_name:   form.lastName,
-        username:    form.username.toLowerCase().trim(),
-        class_grade: `${form.profession} — Grade ${form.grade}`,
-      });
-
-    if (profileError) {
-      setError("Account created but profile save failed. Contact admin.");
+    if (signInError) {
+      setError("Wrong username or password.");
       setLoading(false);
       return;
     }
 
     setLoading(false);
-    navigate("/login");
+    navigate("/feed"); // ← will build this next
   };
 
   if (ipStatus === "checking") return <LoadingScreen />;
@@ -156,10 +119,9 @@ export default function RegisterForm() {
             <span className="c-lp">LP</span><span className="c-fa">FA</span>
             <span className="c-n">n</span><span className="c-1">1</span>
           </div>
-          <h1 className="headline">Your school,<br /><em>your space.</em></h1>
+          <h1 className="headline">Welcome<br /><em>back.</em></h1>
           <p className="sub-text">
-            A private space for LPFA students — confess anonymously,
-            connect with classmates, build your story.
+            Your confessions, your classmates, your stories — all waiting for you.
           </p>
         </div>
         <div className="l-bot">
@@ -186,46 +148,23 @@ export default function RegisterForm() {
               <span className="mc-lp">LP</span><span className="mc-fa">FA</span>
               <span className="mc-n">n</span><span className="mc-1">1</span>
             </div>
-            <h1 className="mobile-headline">Your school,<br /><em>your space.</em></h1>
+            <h1 className="mobile-headline">Welcome<br /><em>back.</em></h1>
             <p className="mobile-sub">
-              A private space for LPFA students — confess anonymously,
-              connect with classmates, build your story.
+              Your confessions, your classmates, your stories — all waiting for you.
             </p>
           </div>
 
           <motion.div className="eyebrow" {...up(0.08)}>
-            <div className="ey-bar" /><span className="ey-txt">Student registration</span>
+            <div className="ey-bar" /><span className="ey-txt">Student login</span>
           </motion.div>
-          <motion.h2 className="form-title" {...up(0.15)}>Create account</motion.h2>
-          <motion.p  className="form-sub"   {...up(0.21)}>Join the LPFA student network</motion.p>
+          <motion.h2 className="form-title" {...up(0.15)}>Sign in</motion.h2>
+          <motion.p  className="form-sub"   {...up(0.21)}>Good to see you again</motion.p>
 
           <div className="mobile-form-body">
             <form onSubmit={handleSubmit} noValidate>
 
-              {/* Name row */}
-              <motion.div className="f-row" {...up(0.27)}>
-                <div className="field" style={{ marginBottom: 0 }}>
-                  <label htmlFor="firstName">First name</label>
-                  <div className="in-wrap">
-                    <span className="in-ico"><UserIcon /></span>
-                    <input id="firstName" name="firstName" type="text"
-                      placeholder="Armen" autoComplete="given-name"
-                      value={form.firstName} onChange={handleChange} />
-                  </div>
-                </div>
-                <div className="field" style={{ marginBottom: 0 }}>
-                  <label htmlFor="lastName">Last name</label>
-                  <div className="in-wrap">
-                    <span className="in-ico"><UserIcon /></span>
-                    <input id="lastName" name="lastName" type="text"
-                      placeholder="Petrosyan" autoComplete="family-name"
-                      value={form.lastName} onChange={handleChange} />
-                  </div>
-                </div>
-              </motion.div>
-
               {/* Username */}
-              <motion.div className="field" {...up(0.33)}>
+              <motion.div className="field" {...up(0.27)}>
                 <label htmlFor="username">Username</label>
                 <div className="in-wrap">
                   <span className="in-ico"><AtIcon /></span>
@@ -235,39 +174,13 @@ export default function RegisterForm() {
                 </div>
               </motion.div>
 
-              {/* Profession & Grade */}
-              <motion.div className="f-row" {...up(0.39)}>
-                <div className="field" style={{ marginBottom: 0 }}>
-                  <label htmlFor="profession">Faculty</label>
-                  <div className="in-wrap">
-                    <span className="in-ico"><SchoolIcon /></span>
-                    <select id="profession" name="profession"
-                      value={form.profession} onChange={handleChange}>
-                      <option value="">Select…</option>
-                      {PROFESSIONS.map(p => <option key={p} value={p}>{p}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <div className="field" style={{ marginBottom: 0 }}>
-                  <label htmlFor="grade">Grade</label>
-                  <div className="in-wrap">
-                    <span className="in-ico"><SchoolIcon /></span>
-                    <select id="grade" name="grade"
-                      value={form.grade} onChange={handleChange}>
-                      <option value="">Year…</option>
-                      {GRADES.map(g => <option key={g} value={g}>{g}</option>)}
-                    </select>
-                  </div>
-                </div>
-              </motion.div>
-
               {/* Password */}
-              <motion.div className="field" {...up(0.45)}>
+              <motion.div className="field" {...up(0.33)}>
                 <label htmlFor="password">Password</label>
                 <div className="in-wrap">
                   <span className="in-ico"><LockIcon /></span>
                   <input id="password" name="password" type="password"
-                    placeholder="Min. 8 characters" autoComplete="new-password"
+                    placeholder="Your password" autoComplete="current-password"
                     value={form.password} onChange={handleChange} />
                 </div>
               </motion.div>
@@ -282,14 +195,14 @@ export default function RegisterForm() {
               </AnimatePresence>
 
               <motion.button className="btn-submit" type="submit" disabled={loading}
-                {...up(0.51)} whileHover={{ y: -2, scale: 1.01 }} whileTap={{ scale: 0.98 }}>
-                {loading ? <Spinner size={18} /> : <>Create account <ArrowIcon /></>}
+                {...up(0.39)} whileHover={{ y: -2, scale: 1.01 }} whileTap={{ scale: 0.98 }}>
+                {loading ? <Spinner size={18} /> : <>Sign in <ArrowIcon /></>}
               </motion.button>
 
             </form>
 
-            <motion.p className="form-foot" {...up(0.57)}>
-              Already have an account? <Link to="/login">Sign in</Link>
+            <motion.p className="form-foot" {...up(0.45)}>
+              Don't have an account? <Link to="/register">Register</Link>
             </motion.p>
           </div>
 
@@ -300,11 +213,6 @@ export default function RegisterForm() {
 }
 
 /* ── Icons ────────────────────────────────────────────────────────── */
-const UserIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-  </svg>
-);
 const AtIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/>
@@ -313,11 +221,6 @@ const AtIcon = () => (
 const LockIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-  </svg>
-);
-const SchoolIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
   </svg>
 );
 const WifiIcon = ({ size = 15 }) => (
