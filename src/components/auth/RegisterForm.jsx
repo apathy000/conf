@@ -54,9 +54,9 @@ function BlockedScreen({ ip }) {
 export default function RegisterForm() {
   const navigate = useNavigate();
 
-  const [ipStatus,    setIpStatus   ] = useState("checking");
-  const [userIP,      setUserIP     ] = useState("");
-  const [showPass,    setShowPass   ] = useState(false);
+  const [ipStatus, setIpStatus] = useState("checking");
+  const [userIP,   setUserIP  ] = useState("");
+  const [showPass, setShowPass] = useState(false);
   const [form, setForm] = useState({
     firstName:  "",
     lastName:   "",
@@ -96,25 +96,39 @@ export default function RegisterForm() {
     if (form.username.length < 3) {
       setError("Username must be at least 3 characters."); return;
     }
+    if (!/^[a-zA-Z0-9_]+$/.test(form.username)) {
+      setError("Username can only contain letters, numbers and underscores."); return;
+    }
     if (form.password.length < 8) {
       setError("Password must be at least 8 characters."); return;
     }
 
     setLoading(true);
 
-    const fakeEmail = `${form.username.toLowerCase().trim()}@lpfaconf.com`;
+    // check if username is already taken
+    const { data: existing } = await supabase
+      .from("users")
+      .select("id")
+      .eq("username", form.username.toLowerCase().trim())
+      .single();
+
+    if (existing) {
+      setError("This username is already taken. Choose another one.");
+      setLoading(false);
+      return;
+    }
+
+    // Supabase auth needs an email internally — user never sees this
+    // we generate a hidden one from the username
+    const hiddenEmail = `${form.username.toLowerCase().trim()}@lpfaconf.app`;
 
     const { data, error: signUpError } = await supabase.auth.signUp({
-      email:    fakeEmail,
+      email:    hiddenEmail,
       password: form.password,
     });
 
     if (signUpError) {
-      setError(
-        signUpError.message.includes("already registered")
-          ? "This username is already taken."
-          : signUpError.message
-      );
+      setError("Registration failed. Try a different username.");
       setLoading(false);
       return;
     }
@@ -145,7 +159,6 @@ export default function RegisterForm() {
   return (
     <div className="page">
 
-      {/* ══ LEFT PANEL ════════════════════════════════════════════ */}
       <div className="left">
         <div className="l-grid" aria-hidden="true" />
         <div className="orb orb-r" aria-hidden="true" />
@@ -183,11 +196,9 @@ export default function RegisterForm() {
         </div>
       </div>
 
-      {/* ══ RIGHT PANEL ═══════════════════════════════════════════ */}
       <div className="right">
         <div className="form-wrap">
 
-          {/* mobile hero */}
           <div className="mobile-hero">
             <div className="mobile-chip">
               <img src="/images.jpg" alt="LPFA" className="chip-logo" />
@@ -199,7 +210,6 @@ export default function RegisterForm() {
             </p>
           </div>
 
-          {/* desktop header */}
           <motion.div className="eyebrow" {...up(0.08)}>
             <div className="ey-bar" /><span className="ey-txt">Student registration</span>
           </motion.div>
@@ -237,7 +247,7 @@ export default function RegisterForm() {
                 <div className="in-wrap">
                   <span className="in-ico"><AtIcon /></span>
                   <input id="username" name="username" type="text"
-                    placeholder="armen_p" autoComplete="username"
+                    placeholder="armen_p" autoComplete="off"
                     value={form.username} onChange={handleChange} />
                 </div>
               </motion.div>
@@ -268,7 +278,7 @@ export default function RegisterForm() {
                 </div>
               </motion.div>
 
-              {/* Password — with eye toggle */}
+              {/* Password */}
               <motion.div className="field" {...up(0.45)}>
                 <label htmlFor="password">Password</label>
                 <div className="in-wrap">
@@ -281,13 +291,10 @@ export default function RegisterForm() {
                     value={form.password} onChange={handleChange}
                     style={{ paddingRight: 44 }}
                   />
-                  <button
-                    type="button"
-                    className="eye-btn"
+                  <button type="button" className="eye-btn"
                     onClick={() => setShowPass(p => !p)}
                     tabIndex={-1}
-                    aria-label={showPass ? "Hide password" : "Show password"}
-                  >
+                    aria-label={showPass ? "Hide password" : "Show password"}>
                     {showPass ? <EyeOffIcon /> : <EyeIcon />}
                   </button>
                 </div>

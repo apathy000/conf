@@ -3,9 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 
-const ALLOWED_IPS = ["5.77.194.211",
-    
-];
+const ALLOWED_IPS = ["5.77.194.211"];
 
 const up = (delay = 0) => ({
   initial:    { opacity: 0, y: 18 },
@@ -55,6 +53,7 @@ export default function LoginForm() {
 
   const [ipStatus, setIpStatus] = useState("checking");
   const [userIP,   setUserIP  ] = useState("");
+  const [showPass, setShowPass] = useState(false);
   const [form, setForm] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error,   setError  ] = useState("");
@@ -83,12 +82,14 @@ export default function LoginForm() {
     if (!form.username || !form.password) {
       setError("Please fill in all fields."); return;
     }
+
     setLoading(true);
 
-    const fakeEmail = `${form.username.toLowerCase().trim()}@lpfaconf.com`;
+    // reconstruct the hidden email from username — same formula as register
+    const hiddenEmail = `${form.username.toLowerCase().trim()}@lpfaconf.app`;
 
     const { error: signInError } = await supabase.auth.signInWithPassword({
-      email:    fakeEmail,
+      email:    hiddenEmail,
       password: form.password,
     });
 
@@ -108,7 +109,6 @@ export default function LoginForm() {
   return (
     <div className="page">
 
-      {/* ══ LEFT PANEL ════════════════════════════════════════════ */}
       <div className="left">
         <div className="l-grid" aria-hidden="true" />
         <div className="orb orb-r" aria-hidden="true" />
@@ -145,11 +145,9 @@ export default function LoginForm() {
         </div>
       </div>
 
-      {/* ══ RIGHT PANEL ═══════════════════════════════════════════ */}
       <div className="right">
         <div className="form-wrap">
 
-          {/* mobile hero */}
           <div className="mobile-hero">
             <div className="mobile-chip">
               <img src="/images.jpg" alt="LPFA" className="chip-logo" />
@@ -160,7 +158,6 @@ export default function LoginForm() {
             </p>
           </div>
 
-          {/* desktop header */}
           <motion.div className="eyebrow" {...up(0.08)}>
             <div className="ey-bar" /><span className="ey-txt">Student login</span>
           </motion.div>
@@ -176,7 +173,7 @@ export default function LoginForm() {
                 <div className="in-wrap">
                   <span className="in-ico"><AtIcon /></span>
                   <input id="username" name="username" type="text"
-                    placeholder="armen_p" autoComplete="username"
+                    placeholder="armen_p" autoComplete="off"
                     value={form.username} onChange={handleChange} />
                 </div>
               </motion.div>
@@ -186,9 +183,20 @@ export default function LoginForm() {
                 <label htmlFor="password">Password</label>
                 <div className="in-wrap">
                   <span className="in-ico"><LockIcon /></span>
-                  <input id="password" name="password" type="password"
-                    placeholder="Your password" autoComplete="current-password"
-                    value={form.password} onChange={handleChange} />
+                  <input
+                    id="password" name="password"
+                    type={showPass ? "text" : "password"}
+                    placeholder="Your password"
+                    autoComplete="current-password"
+                    value={form.password} onChange={handleChange}
+                    style={{ paddingRight: 44 }}
+                  />
+                  <button type="button" className="eye-btn"
+                    onClick={() => setShowPass(p => !p)}
+                    tabIndex={-1}
+                    aria-label={showPass ? "Hide password" : "Show password"}>
+                    {showPass ? <EyeOffIcon /> : <EyeIcon />}
+                  </button>
                 </div>
               </motion.div>
 
@@ -228,6 +236,18 @@ const AtIcon = () => (
 const LockIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+  </svg>
+);
+const EyeIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+  </svg>
+);
+const EyeOffIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+    <line x1="1" y1="1" x2="23" y2="23"/>
   </svg>
 );
 const WifiIcon = ({ size = 15 }) => (
