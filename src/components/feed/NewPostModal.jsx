@@ -15,7 +15,6 @@ export default function NewPostModal({ profile, onClose, onPosted }) {
     if (content.length > maxChars) { setError("Too long — max 500 characters."); return; }
 
     setLoading(true);
-
     const { data: { session } } = await supabase.auth.getSession();
 
     const { data, error: insertError } = await supabase
@@ -41,104 +40,140 @@ export default function NewPostModal({ profile, onClose, onPosted }) {
 
   return (
     <AnimatePresence>
+
       {/* Backdrop */}
       <motion.div
-        className="modal-backdrop"
+        className="sheet-backdrop"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
       />
 
-      {/* Modal — inline style handles centering, framer only does scale+opacity */}
+      {/* Desktop — centered modal */}
       <motion.div
-        className="modal"
-        style={{
-          position: "fixed",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          zIndex: 201,
-        }}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.97 }}
-        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        className="sheet-desktop"
+        initial={{ opacity: 0, scale: 0.96, y: 10 }}
+        animate={{ opacity: 1, scale: 1,    y: 0  }}
+        exit={{ opacity: 0, scale: 0.97,    y: 10 }}
+        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
       >
-        {/* Header */}
-        <div className="modal-header">
-          <h2 className="modal-title">New confession</h2>
-          <button className="modal-close" onClick={onClose}><CloseIcon /></button>
-        </div>
+        <SheetContent
+          profile={profile}
+          content={content} setContent={setContent}
+          isAnonymous={isAnonymous} setIsAnonymous={setIsAnonymous}
+          loading={loading} error={error} setError={setError}
+          maxChars={maxChars}
+          onClose={onClose}
+          onSubmit={handleSubmit}
+        />
+      </motion.div>
 
-        {/* Anonymous toggle */}
-        <div className="modal-toggle-wrap">
+      {/* Mobile — slides up from bottom */}
+      <motion.div
+        className="sheet-mobile"
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <SheetContent
+          profile={profile}
+          content={content} setContent={setContent}
+          isAnonymous={isAnonymous} setIsAnonymous={setIsAnonymous}
+          loading={loading} error={error} setError={setError}
+          maxChars={maxChars}
+          onClose={onClose}
+          onSubmit={handleSubmit}
+        />
+      </motion.div>
+
+    </AnimatePresence>
+  );
+}
+
+/* shared content between desktop modal and mobile sheet */
+function SheetContent({ profile, content, setContent, isAnonymous, setIsAnonymous, loading, error, setError, maxChars, onClose, onSubmit }) {
+  return (
+    <>
+      {/* drag handle — mobile only */}
+      <div className="sheet-handle" />
+
+      {/* Header */}
+      <div className="sheet-header">
+        <div className="sheet-who">
+          <div className="sheet-avatar">
+            {isAnonymous ? "?" : `${profile?.first_name?.[0] || ""}${profile?.last_name?.[0] || ""}`}
+          </div>
+          <div>
+            <div className="sheet-name">
+              {isAnonymous ? "Anonymous" : `${profile?.first_name} ${profile?.last_name}`}
+            </div>
+            <div className="sheet-sub">
+              {isAnonymous ? "Your identity is hidden" : profile?.class_grade}
+            </div>
+          </div>
+        </div>
+        <button className="sheet-close" onClick={onClose}><CloseIcon /></button>
+      </div>
+
+      {/* Textarea */}
+      <textarea
+        className="sheet-textarea"
+        placeholder="Write your confession… (English or Armenian)"
+        value={content}
+        onChange={e => { setContent(e.target.value); setError(""); }}
+        maxLength={maxChars}
+        autoFocus
+      />
+
+      {/* Error */}
+      {error && <p className="sheet-error">{error}</p>}
+
+      {/* Footer */}
+      <div className="sheet-footer">
+        {/* toggle */}
+        <div className="sheet-toggle">
           <button
-            className={`toggle-option ${isAnonymous ? "active" : ""}`}
+            className={`stoggle-btn ${isAnonymous ? "active" : ""}`}
             onClick={() => setIsAnonymous(true)}
           >
-            <MaskIcon /> Anonymous
+            <MaskIcon /> Anon
           </button>
           <button
-            className={`toggle-option ${!isAnonymous ? "active" : ""}`}
+            className={`stoggle-btn ${!isAnonymous ? "active" : ""}`}
             onClick={() => setIsAnonymous(false)}
           >
-            <UserIcon /> {profile ? `${profile.first_name} ${profile.last_name}` : "My name"}
+            <UserIcon /> Named
           </button>
         </div>
 
-        {/* Hint */}
-        <p className="modal-hint">
-          {isAnonymous
-            ? "🤫 Your name will be completely hidden"
-            : `👤 Will post as ${profile?.first_name} ${profile?.last_name}`}
-        </p>
-
-        {/* Textarea */}
-        <textarea
-          className="modal-textarea"
-          placeholder="Write your confession… (English or Armenian)"
-          value={content}
-          onChange={e => { setContent(e.target.value); setError(""); }}
-          maxLength={maxChars}
-          autoFocus
-        />
-
-        {/* Char count */}
-        <div className="modal-chars">
-          <span className={content.length > maxChars * 0.9 ? "chars-warn" : ""}>
+        {/* char count + submit */}
+        <div className="sheet-footer-right">
+          <span className={`sheet-chars ${content.length > maxChars * 0.9 ? "chars-warn" : ""}`}>
             {content.length}/{maxChars}
           </span>
-        </div>
-
-        {/* Error */}
-        {error && <p className="modal-error">{error}</p>}
-
-        {/* Footer */}
-        <div className="modal-footer">
-          <button className="modal-cancel" onClick={onClose}>Cancel</button>
           <button
-            className="modal-submit"
-            onClick={handleSubmit}
+            className="sheet-submit"
+            onClick={onSubmit}
             disabled={loading || !content.trim()}
           >
-            {loading ? <Spinner /> : "Post confession"}
+            {loading ? <Spinner /> : "Post"}
           </button>
         </div>
-
-      </motion.div>
-    </AnimatePresence>
+      </div>
+    </>
   );
 }
 
 /* ── Icons ────────────────────────────────────────────────────────── */
 const CloseIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
   </svg>
 );
 const MaskIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
     <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
     <line x1="9" y1="9" x2="9.01" y2="9"/>
@@ -146,7 +181,7 @@ const MaskIcon = () => (
   </svg>
 );
 const UserIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
   </svg>
 );
