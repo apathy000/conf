@@ -14,7 +14,7 @@ export default function FeedPage() {
   const [user,        setUser       ] = useState(null);
   const [profile,     setProfile    ] = useState(null);
 
-  // desktop composer state
+
   const [content,     setContent    ] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(true);
   const [posting,     setPosting    ] = useState(false);
@@ -75,13 +75,13 @@ export default function FeedPage() {
   const handlePosted = (newPost) => {
     setConfessions(prev => [newPost, ...prev]);
     setMobileModal(false);
-    // reset desktop composer
+
     setContent("");
     setFocused(false);
     setError("");
   };
 
-  // desktop post submit
+
   const handleDesktopSubmit = async () => {
     if (!content.trim()) { setError("Write something first."); return; }
     if (content.length > 500) { setError("Max 500 characters."); return; }
@@ -116,7 +116,7 @@ export default function FeedPage() {
 
       <main className="feed-main">
 
-        {/* ══ DESKTOP COMPOSER — type directly here ══════════════ */}
+        {}
         <div className={`composer ${focused ? "composer-focused" : ""}`}>
 
           <div className="composer-avatar">
@@ -135,7 +135,7 @@ export default function FeedPage() {
               maxLength={500}
             />
 
-            {/* expanded actions — only show when focused */}
+            {}
             {focused && (
               <div className="composer-actions">
                 <div className="composer-toggles">
@@ -187,7 +187,7 @@ export default function FeedPage() {
 
         <div className="feed-divider" />
 
-        {/* ── Feed ── */}
+        {}
         {loading ? (
           <div className="feed-loading">
             <Spinner />
@@ -213,12 +213,12 @@ export default function FeedPage() {
         )}
       </main>
 
-      {/* ── MOBILE floating button ── */}
+      {}
       <button className="mobile-fab" onClick={() => setMobileModal(true)}>
         <PenIcon />
       </button>
 
-      {/* ── MOBILE bottom sheet ── */}
+      {}
       {mobileModal && (
         <NewPostModal
           profile={profile}

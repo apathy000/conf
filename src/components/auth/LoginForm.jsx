@@ -85,7 +85,6 @@ export default function LoginForm() {
 
     setLoading(true);
 
-    // reconstruct the hidden email from username — same formula as register
     const hiddenEmail = `${form.username.toLowerCase().trim()}@lpfaconf.app`;
 
     const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -167,7 +166,6 @@ export default function LoginForm() {
           <div className="mobile-form-body">
             <form onSubmit={handleSubmit} noValidate>
 
-              {/* Username */}
               <motion.div className="field" {...up(0.27)}>
                 <label htmlFor="username">Username</label>
                 <div className="in-wrap">
@@ -178,7 +176,6 @@ export default function LoginForm() {
                 </div>
               </motion.div>
 
-              {/* Password */}
               <motion.div className="field" {...up(0.33)}>
                 <label htmlFor="password">Password</label>
                 <div className="in-wrap">
@@ -227,7 +224,7 @@ export default function LoginForm() {
   );
 }
 
-/* ── Icons ────────────────────────────────────────────────────────── */
+
 const AtIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/>

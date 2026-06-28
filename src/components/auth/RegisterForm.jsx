@@ -105,7 +105,6 @@ export default function RegisterForm() {
 
     setLoading(true);
 
-    // check if username is already taken
     const { data: existing } = await supabase
       .from("users")
       .select("id")
@@ -118,8 +117,6 @@ export default function RegisterForm() {
       return;
     }
 
-    // Supabase auth needs an email internally — user never sees this
-    // we generate a hidden one from the username
     const hiddenEmail = `${form.username.toLowerCase().trim()}@lpfaconf.app`;
 
     const { data, error: signUpError } = await supabase.auth.signUp({
@@ -219,7 +216,6 @@ export default function RegisterForm() {
           <div className="mobile-form-body">
             <form onSubmit={handleSubmit} noValidate>
 
-              {/* Name row */}
               <motion.div className="f-row" {...up(0.27)}>
                 <div className="field" style={{ marginBottom: 0 }}>
                   <label htmlFor="firstName">First name</label>
@@ -241,7 +237,6 @@ export default function RegisterForm() {
                 </div>
               </motion.div>
 
-              {/* Username */}
               <motion.div className="field" {...up(0.33)}>
                 <label htmlFor="username">Username</label>
                 <div className="in-wrap">
@@ -252,7 +247,6 @@ export default function RegisterForm() {
                 </div>
               </motion.div>
 
-              {/* Profession & Grade */}
               <motion.div className="f-row" {...up(0.39)}>
                 <div className="field" style={{ marginBottom: 0 }}>
                   <label htmlFor="profession">Faculty</label>
@@ -278,7 +272,6 @@ export default function RegisterForm() {
                 </div>
               </motion.div>
 
-              {/* Password */}
               <motion.div className="field" {...up(0.45)}>
                 <label htmlFor="password">Password</label>
                 <div className="in-wrap">
@@ -327,7 +320,6 @@ export default function RegisterForm() {
   );
 }
 
-/* ── Icons ────────────────────────────────────────────────────────── */
 const UserIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>

@@ -31,16 +31,12 @@ body {
   overscroll-behavior: none;
 }
 
-/* ════════════════════════════════════════════
-   DESKTOP LAYOUT
-════════════════════════════════════════════ */
 .page {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 1.1fr 1fr;
 }
 
-/* ── LEFT PANEL ─────────────────────────── */
 .left {
   position: relative;
   overflow: hidden;
@@ -141,7 +137,6 @@ body {
   font-size: 12px; font-weight: 500; color: #7aace8;
 }
 
-/* ── RIGHT PANEL ────────────────────────── */
 .right {
   display: flex;
   align-items: center;
@@ -165,7 +160,6 @@ body {
   border-radius: 50%; pointer-events: none;
 }
 
-/* the form wrapper — centered inside right panel */
 .form-wrap {
   width: 100%;
   max-width: 390px;
@@ -173,11 +167,9 @@ body {
   z-index: 1;
 }
 
-/* mobile hero — HIDDEN on desktop */
 .mobile-hero   { display: none; }
 .mobile-chip   { display: none; }
 
-/* eyebrow */
 .eyebrow {
   display: flex; align-items: center; gap: 10px;
   margin-bottom: 20px;
@@ -207,7 +199,6 @@ body {
   animation: floatUp .5s .24s both;
 }
 
-/* ── FIELDS ─────────────────────────────── */
 .f-row  { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 13px; }
 .field  { margin-bottom: 13px; }
 
@@ -228,7 +219,6 @@ body {
 }
 .in-wrap:focus-within .in-ico { color: var(--red-hi); }
 
-/* eye button inside password field */
 .eye-btn {
   position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
   background: none; border: none; padding: 0;
@@ -257,14 +247,12 @@ body {
 }
 .in-wrap select option { background: #12162a; color: var(--text); }
 
-/* error */
 .err-msg {
   background: rgba(192,57,43,.08); border: 1px solid rgba(192,57,43,.22);
   border-radius: 10px; color: #f08878;
   font-size: 13px; padding: 10px 14px; margin-bottom: 12px;
 }
 
-/* button */
 .btn-submit {
   width: 100%; height: 50px;
   background: var(--red); color: #fff;
@@ -285,7 +273,6 @@ body {
 .btn-submit:active { transform: scale(0.985); }
 .btn-submit:disabled { opacity: .55; cursor: not-allowed; }
 
-/* footer link */
 .form-foot {
   text-align: center; margin-top: 20px;
   font-size: 13px; font-weight: 300; color: var(--muted);
@@ -293,10 +280,8 @@ body {
 .form-foot a { color: var(--red-hi); font-weight: 500; text-decoration: none; }
 .form-foot a:hover { text-decoration: underline; }
 
-/* mobile-form-body — on desktop just renders normally */
 .mobile-form-body { width: 100%; }
 
-/* ── BLOCKED / LOADING SCREENS ──────────── */
 .screen-center {
   min-height: 100vh; display: flex; align-items: center; justify-content: center;
   flex-direction: column; gap: 16px; background: var(--bg);
@@ -322,9 +307,6 @@ body {
   font-size: 12px; font-weight: 500; color: #7aace8;
 }
 
-/* ════════════════════════════════════════════
-   MOBILE  ≤ 768px
-════════════════════════════════════════════ */
 @media (max-width: 768px) {
 
   .page {
@@ -332,7 +314,6 @@ body {
     background: var(--bg);
   }
 
-  /* hide desktop left panel */
   .left { display: none; }
 
   .right {
@@ -361,7 +342,6 @@ body {
     padding: 0;
   }
 
-  /* red top stripe */
   .form-wrap::before {
     content: '';
     display: block; height: 3px;
@@ -369,7 +349,6 @@ body {
     width: 100%; flex-shrink: 0;
   }
 
-  /* mobile hero — SHOW on mobile */
   .mobile-hero {
     display: block;
     background: linear-gradient(160deg, #08091f 0%, #0d1432 100%);
@@ -382,7 +361,6 @@ body {
     background-size: 24px 24px; pointer-events: none;
   }
 
-  /* show mobile chip */
   .mobile-chip {
     display: inline-flex; align-items: center; gap: 4px;
     background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
@@ -410,10 +388,8 @@ body {
     line-height: 1.65; position: relative; z-index: 1; max-width: 300px;
   }
 
-  /* hide desktop eyebrow/title/sub on mobile */
   .eyebrow, .form-title, .form-sub { display: none; }
 
-  /* form body — bottom sheet style */
   .mobile-form-body {
     flex: 1;
     padding: 28px 20px 40px;
@@ -423,7 +399,6 @@ body {
     position: relative; z-index: 2;
   }
 
-  /* drag handle */
   .mobile-form-body::before {
     content: '';
     display: block; width: 36px; height: 4px;
@@ -431,10 +406,8 @@ body {
     margin: 0 auto 24px;
   }
 
-  /* stack name fields vertically on mobile */
   .f-row { grid-template-columns: 1fr; gap: 0; margin-bottom: 0; }
 
-  /* bigger touch targets */
   .in-wrap input,
   .in-wrap select {
     height: 52px;
@@ -445,16 +418,13 @@ body {
   .field label { font-size: 11px; margin-bottom: 8px; }
   .field { margin-bottom: 16px; }
 
-  /* bigger button */
   .btn-submit { height: 56px; font-size: 16px; border-radius: 14px; margin-top: 8px; }
 
   .form-foot { margin-top: 24px; font-size: 14px; padding-bottom: 16px; }
 
-  /* screen cards */
   .screen-card { padding: 40px 28px; border-radius: 20px; }
 }
 
-/* very small phones */
 @media (max-width: 380px) {
   .mobile-hero { padding: 28px 18px 32px; }
   .mobile-form-body { padding: 24px 16px 36px; }

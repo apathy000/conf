@@ -13,13 +13,13 @@ export default function Navbar({ profile }) {
     <nav className="navbar">
       <div className="navbar-inner">
 
-        {/* Logo */}
+        {}
         <div className="navbar-logo">
           <img src="/images.jpg" alt="LPFA" className="navbar-logo-img" />
           <span className="navbar-title">conf</span>
         </div>
 
-        {/* Right side */}
+        {}
         <div className="navbar-right">
           {profile && (
             <div className="navbar-profile">

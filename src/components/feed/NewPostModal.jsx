@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../../lib/supabase";
 
@@ -7,15 +7,56 @@ export default function NewPostModal({ profile, onClose, onPosted }) {
   const [isAnonymous, setIsAnonymous] = useState(true);
   const [loading,     setLoading    ] = useState(false);
   const [error,       setError      ] = useState("");
+  const [image,       setImage      ] = useState(null);
+  const [imagePreview,setImagePreview] = useState(null);
+  const fileRef = useRef(null);
 
   const maxChars = 500;
 
+  const handleImage = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { setError("Image too large — max 5MB."); return; }
+    setImage(file);
+    setImagePreview(URL.createObjectURL(file));
+    setError("");
+  };
+
+  const removeImage = () => {
+    setImage(null);
+    setImagePreview(null);
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
   const handleSubmit = async () => {
-    if (!content.trim()) { setError("Write something first."); return; }
-    if (content.length > maxChars) { setError("Too long — max 500 characters."); return; }
+    if (!content.trim() && !image) { setError("Write something or add a photo."); return; }
+    if (content.length > maxChars)  { setError("Too long — max 500 characters."); return; }
 
     setLoading(true);
     const { data: { session } } = await supabase.auth.getSession();
+
+    let image_url = null;
+
+
+    if (image) {
+      const ext  = image.name.split(".").pop();
+      const path = `confessions/${session.user.id}_${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("confession-images")
+        .upload(path, image);
+
+      if (uploadError) {
+        setError("Image upload failed. Try again.");
+        setLoading(false);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("confession-images")
+        .getPublicUrl(path);
+
+      image_url = urlData.publicUrl;
+    }
 
     const { data, error: insertError } = await supabase
       .from("confessions")
@@ -24,6 +65,7 @@ export default function NewPostModal({ profile, onClose, onPosted }) {
         content:      content.trim(),
         is_anonymous: isAnonymous,
         likes_count:  0,
+        image_url,
       })
       .select(`*, users ( first_name, last_name, username, class_grade )`)
       .single();
@@ -40,8 +82,7 @@ export default function NewPostModal({ profile, onClose, onPosted }) {
 
   return (
     <AnimatePresence>
-
-      {/* Backdrop */}
+      {}
       <motion.div
         className="sheet-backdrop"
         initial={{ opacity: 0 }}
@@ -50,26 +91,7 @@ export default function NewPostModal({ profile, onClose, onPosted }) {
         onClick={onClose}
       />
 
-      {/* Desktop — centered modal */}
-      <motion.div
-        className="sheet-desktop"
-        initial={{ opacity: 0, scale: 0.96, y: 10 }}
-        animate={{ opacity: 1, scale: 1,    y: 0  }}
-        exit={{ opacity: 0, scale: 0.97,    y: 10 }}
-        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <SheetContent
-          profile={profile}
-          content={content} setContent={setContent}
-          isAnonymous={isAnonymous} setIsAnonymous={setIsAnonymous}
-          loading={loading} error={error} setError={setError}
-          maxChars={maxChars}
-          onClose={onClose}
-          onSubmit={handleSubmit}
-        />
-      </motion.div>
-
-      {/* Mobile — slides up from bottom */}
+      {}
       <motion.div
         className="sheet-mobile"
         initial={{ y: "100%" }}
@@ -77,96 +99,106 @@ export default function NewPostModal({ profile, onClose, onPosted }) {
         exit={{ y: "100%" }}
         transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
       >
-        <SheetContent
-          profile={profile}
-          content={content} setContent={setContent}
-          isAnonymous={isAnonymous} setIsAnonymous={setIsAnonymous}
-          loading={loading} error={error} setError={setError}
-          maxChars={maxChars}
-          onClose={onClose}
-          onSubmit={handleSubmit}
-        />
-      </motion.div>
+        {}
+        <div className="sheet-handle" />
 
+        {}
+        <div className="sheet-header">
+          <div className="sheet-who">
+            <div className="sheet-avatar">
+              {isAnonymous
+                ? "?"
+                : `${profile?.first_name?.[0] || ""}${profile?.last_name?.[0] || ""}`}
+            </div>
+            <div>
+              <div className="sheet-name">
+                {isAnonymous ? "Anonymous" : `${profile?.first_name} ${profile?.last_name}`}
+              </div>
+              <div className="sheet-sub">
+                {isAnonymous ? "Your identity is hidden" : profile?.class_grade}
+              </div>
+            </div>
+          </div>
+          <button className="sheet-close" onClick={onClose}><CloseIcon /></button>
+        </div>
+
+        {}
+        <textarea
+          className="sheet-textarea"
+          placeholder="Write your confession… (English or Armenian)"
+          value={content}
+          onChange={e => { setContent(e.target.value); setError(""); }}
+          maxLength={maxChars}
+          autoFocus
+        />
+
+        {}
+        {imagePreview && (
+          <div className="sheet-image-preview">
+            <img src={imagePreview} alt="preview" />
+            <button className="sheet-image-remove" onClick={removeImage}>
+              <CloseIcon />
+            </button>
+          </div>
+        )}
+
+        {}
+        {error && <p className="sheet-error">{error}</p>}
+
+        {}
+        <div className="sheet-footer">
+          <div className="sheet-toggle">
+            <button
+              className={`stoggle-btn ${isAnonymous ? "active" : ""}`}
+              onClick={() => setIsAnonymous(true)}
+              type="button"
+            >
+              <MaskIcon /> Anon
+            </button>
+            <button
+              className={`stoggle-btn ${!isAnonymous ? "active" : ""}`}
+              onClick={() => setIsAnonymous(false)}
+              type="button"
+            >
+              <UserIcon /> Named
+            </button>
+
+            {}
+            <button
+              className="stoggle-btn"
+              onClick={() => fileRef.current?.click()}
+              type="button"
+            >
+              <PhotoIcon /> Photo
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleImage}
+            />
+          </div>
+
+          <div className="sheet-footer-right">
+            <span className={`sheet-chars ${content.length > maxChars * 0.9 ? "chars-warn" : ""}`}>
+              {content.length}/{maxChars}
+            </span>
+            <button
+              className="sheet-submit"
+              onClick={handleSubmit}
+              disabled={loading || (!content.trim() && !image)}
+            >
+              {loading ? <Spinner /> : "Post"}
+            </button>
+          </div>
+        </div>
+      </motion.div>
     </AnimatePresence>
   );
 }
 
-/* shared content between desktop modal and mobile sheet */
-function SheetContent({ profile, content, setContent, isAnonymous, setIsAnonymous, loading, error, setError, maxChars, onClose, onSubmit }) {
-  return (
-    <>
-      {/* drag handle — mobile only */}
-      <div className="sheet-handle" />
 
-      {/* Header */}
-      <div className="sheet-header">
-        <div className="sheet-who">
-          <div className="sheet-avatar">
-            {isAnonymous ? "?" : `${profile?.first_name?.[0] || ""}${profile?.last_name?.[0] || ""}`}
-          </div>
-          <div>
-            <div className="sheet-name">
-              {isAnonymous ? "Anonymous" : `${profile?.first_name} ${profile?.last_name}`}
-            </div>
-            <div className="sheet-sub">
-              {isAnonymous ? "Your identity is hidden" : profile?.class_grade}
-            </div>
-          </div>
-        </div>
-        <button className="sheet-close" onClick={onClose}><CloseIcon /></button>
-      </div>
-
-      {/* Textarea */}
-      <textarea
-        className="sheet-textarea"
-        placeholder="Write your confession… (English or Armenian)"
-        value={content}
-        onChange={e => { setContent(e.target.value); setError(""); }}
-        maxLength={maxChars}
-        autoFocus
-      />
-
-      {/* Error */}
-      {error && <p className="sheet-error">{error}</p>}
-
-      {/* Footer */}
-      <div className="sheet-footer">
-        {/* toggle */}
-        <div className="sheet-toggle">
-          <button
-            className={`stoggle-btn ${isAnonymous ? "active" : ""}`}
-            onClick={() => setIsAnonymous(true)}
-          >
-            <MaskIcon /> Anon
-          </button>
-          <button
-            className={`stoggle-btn ${!isAnonymous ? "active" : ""}`}
-            onClick={() => setIsAnonymous(false)}
-          >
-            <UserIcon /> Named
-          </button>
-        </div>
-
-        {/* char count + submit */}
-        <div className="sheet-footer-right">
-          <span className={`sheet-chars ${content.length > maxChars * 0.9 ? "chars-warn" : ""}`}>
-            {content.length}/{maxChars}
-          </span>
-          <button
-            className="sheet-submit"
-            onClick={onSubmit}
-            disabled={loading || !content.trim()}
-          >
-            {loading ? <Spinner /> : "Post"}
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* ── Icons ────────────────────────────────────────────────────────── */
 const CloseIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -183,6 +215,12 @@ const MaskIcon = () => (
 const UserIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+  </svg>
+);
+const PhotoIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+    <polyline points="21 15 16 10 5 21"/>
   </svg>
 );
 const Spinner = () => (
