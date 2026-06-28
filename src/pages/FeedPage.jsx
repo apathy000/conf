@@ -2,7 +2,7 @@ import "../styles/feed.css";
 import Navbar from "../components/feed/Navbar";
 import ConfessionCard from "../components/feed/ConfessionCard";
 import NewPostModal from "../components/feed/NewPostModal";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { useNavigate } from "react-router-dom";
 
@@ -10,9 +10,17 @@ export default function FeedPage() {
   const navigate = useNavigate();
   const [confessions, setConfessions] = useState([]);
   const [loading,     setLoading    ] = useState(true);
-  const [modalOpen,   setModalOpen  ] = useState(false);
+  const [mobileModal, setMobileModal] = useState(false);
   const [user,        setUser       ] = useState(null);
   const [profile,     setProfile    ] = useState(null);
+
+  // desktop composer state
+  const [content,     setContent    ] = useState("");
+  const [isAnonymous, setIsAnonymous] = useState(true);
+  const [posting,     setPosting    ] = useState(false);
+  const [focused,     setFocused    ] = useState(false);
+  const [error,       setError      ] = useState("");
+  const textareaRef = useRef(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -66,7 +74,40 @@ export default function FeedPage() {
 
   const handlePosted = (newPost) => {
     setConfessions(prev => [newPost, ...prev]);
-    setModalOpen(false);
+    setMobileModal(false);
+    // reset desktop composer
+    setContent("");
+    setFocused(false);
+    setError("");
+  };
+
+  // desktop post submit
+  const handleDesktopSubmit = async () => {
+    if (!content.trim()) { setError("Write something first."); return; }
+    if (content.length > 500) { setError("Max 500 characters."); return; }
+
+    setPosting(true);
+    const { data: { session } } = await supabase.auth.getSession();
+
+    const { data, error: insertError } = await supabase
+      .from("confessions")
+      .insert({
+        author_id:    session.user.id,
+        content:      content.trim(),
+        is_anonymous: isAnonymous,
+        likes_count:  0,
+      })
+      .select(`*, users ( first_name, last_name, username, class_grade )`)
+      .single();
+
+    if (insertError) {
+      setError("Failed to post. Try again.");
+      setPosting(false);
+      return;
+    }
+
+    handlePosted(data);
+    setPosting(false);
   };
 
   return (
@@ -75,37 +116,75 @@ export default function FeedPage() {
 
       <main className="feed-main">
 
-        {/* ── DESKTOP write bar (always visible, like X / ИТД) ── */}
-        <div className="desktop-composer">
+        {/* ══ DESKTOP COMPOSER — type directly here ══════════════ */}
+        <div className={`composer ${focused ? "composer-focused" : ""}`}>
+
           <div className="composer-avatar">
             {profile?.first_name?.[0]}{profile?.last_name?.[0]}
           </div>
-          <div className="composer-right">
-            <div
-              className="composer-input"
-              onClick={() => setModalOpen(true)}
-              role="button"
-              tabIndex={0}
-            >
-              What's on your mind?
-            </div>
-            <div className="composer-actions">
-              <div className="composer-left-actions">
-                <button className="composer-tag anon-tag" onClick={() => setModalOpen(true)}>
-                  <MaskIcon /> Anonymous
-                </button>
-                <button className="composer-tag named-tag" onClick={() => setModalOpen(true)}>
-                  <UserIcon /> Named
-                </button>
+
+          <div className="composer-body">
+            <textarea
+              ref={textareaRef}
+              className="composer-textarea"
+              placeholder="What's on your mind?"
+              value={content}
+              onChange={e => { setContent(e.target.value); setError(""); }}
+              onFocus={() => setFocused(true)}
+              rows={focused ? 3 : 1}
+              maxLength={500}
+            />
+
+            {/* expanded actions — only show when focused */}
+            {focused && (
+              <div className="composer-actions">
+                <div className="composer-toggles">
+                  <button
+                    className={`ctoggle ${isAnonymous ? "active" : ""}`}
+                    onClick={() => setIsAnonymous(true)}
+                    type="button"
+                  >
+                    <MaskIcon /> Anonymous
+                  </button>
+                  <button
+                    className={`ctoggle ${!isAnonymous ? "active" : ""}`}
+                    onClick={() => setIsAnonymous(false)}
+                    type="button"
+                  >
+                    <UserIcon /> {profile?.first_name} {profile?.last_name}
+                  </button>
+                </div>
+
+                <div className="composer-right-actions">
+                  {content.length > 0 && (
+                    <span className={`composer-chars ${content.length > 450 ? "chars-warn" : ""}`}>
+                      {content.length}/500
+                    </span>
+                  )}
+                  <button
+                    className="composer-cancel"
+                    onClick={() => { setFocused(false); setContent(""); setError(""); }}
+                    type="button"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="composer-submit"
+                    onClick={handleDesktopSubmit}
+                    disabled={posting || !content.trim()}
+                    type="button"
+                  >
+                    {posting ? <Spinner /> : "Confess"}
+                  </button>
+                </div>
               </div>
-              <button className="composer-submit" onClick={() => setModalOpen(true)}>
-                Confess
-              </button>
-            </div>
+            )}
+
+            {error && <p className="composer-error">{error}</p>}
           </div>
+
         </div>
 
-        {/* divider */}
         <div className="feed-divider" />
 
         {/* ── Feed ── */}
@@ -135,15 +214,15 @@ export default function FeedPage() {
       </main>
 
       {/* ── MOBILE floating button ── */}
-      <button className="mobile-fab" onClick={() => setModalOpen(true)}>
+      <button className="mobile-fab" onClick={() => setMobileModal(true)}>
         <PenIcon />
       </button>
 
-      {/* ── Modal / bottom sheet ── */}
-      {modalOpen && (
+      {/* ── MOBILE bottom sheet ── */}
+      {mobileModal && (
         <NewPostModal
           profile={profile}
-          onClose={() => setModalOpen(false)}
+          onClose={() => setMobileModal(false)}
           onPosted={handlePosted}
         />
       )}
@@ -151,13 +230,6 @@ export default function FeedPage() {
   );
 }
 
-function Spinner() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: "spin .8s linear infinite" }}>
-      <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-    </svg>
-  );
-}
 const MaskIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
@@ -177,3 +249,10 @@ const PenIcon = () => (
     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
   </svg>
 );
+function Spinner() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: "spin .8s linear infinite" }}>
+      <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+    </svg>
+  );
+}
