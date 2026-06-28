@@ -14,13 +14,16 @@ export default function FeedPage() {
   const [user,        setUser       ] = useState(null);
   const [profile,     setProfile    ] = useState(null);
 
-
+  // desktop composer state
   const [content,     setContent    ] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(true);
   const [posting,     setPosting    ] = useState(false);
   const [focused,     setFocused    ] = useState(false);
   const [error,       setError      ] = useState("");
+  const [image,       setImage      ] = useState(null);
+  const [imagePreview,setImagePreview] = useState(null);
   const textareaRef = useRef(null);
+  const fileRef     = useRef(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -75,19 +78,61 @@ export default function FeedPage() {
   const handlePosted = (newPost) => {
     setConfessions(prev => [newPost, ...prev]);
     setMobileModal(false);
-
     setContent("");
     setFocused(false);
     setError("");
+    setImage(null);
+    setImagePreview(null);
+    if (fileRef.current) fileRef.current.value = "";
   };
 
+  // image pick
+  const handleImagePick = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { setError("Image too large — max 5MB."); return; }
+    setImage(file);
+    setImagePreview(URL.createObjectURL(file));
+    setError("");
+    setFocused(true);
+  };
 
+  const removeImage = () => {
+    setImage(null);
+    setImagePreview(null);
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  // desktop post submit
   const handleDesktopSubmit = async () => {
-    if (!content.trim()) { setError("Write something first."); return; }
+    if (!content.trim() && !image) { setError("Write something or add a photo."); return; }
     if (content.length > 500) { setError("Max 500 characters."); return; }
 
     setPosting(true);
     const { data: { session } } = await supabase.auth.getSession();
+
+    let image_url = null;
+
+    if (image) {
+      const ext  = image.name.split(".").pop();
+      const path = `confessions/${session.user.id}_${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("confession-images")
+        .upload(path, image);
+
+      if (uploadError) {
+        setError("Image upload failed. Try again.");
+        setPosting(false);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("confession-images")
+        .getPublicUrl(path);
+
+      image_url = urlData.publicUrl;
+    }
 
     const { data, error: insertError } = await supabase
       .from("confessions")
@@ -96,6 +141,7 @@ export default function FeedPage() {
         content:      content.trim(),
         is_anonymous: isAnonymous,
         likes_count:  0,
+        image_url,
       })
       .select(`*, users ( first_name, last_name, username, class_grade )`)
       .single();
@@ -116,7 +162,7 @@ export default function FeedPage() {
 
       <main className="feed-main">
 
-        {}
+        {/* ══ DESKTOP COMPOSER ══════════════════════════════════ */}
         <div className={`composer ${focused ? "composer-focused" : ""}`}>
 
           <div className="composer-avatar">
@@ -135,8 +181,18 @@ export default function FeedPage() {
               maxLength={500}
             />
 
-            {}
-            {focused && (
+            {/* image preview */}
+            {imagePreview && (
+              <div className="composer-image-preview">
+                <img src={imagePreview} alt="preview" />
+                <button className="composer-image-remove" onClick={removeImage} type="button">
+                  <CloseIcon />
+                </button>
+              </div>
+            )}
+
+            {/* actions — show when focused OR image selected */}
+            {(focused || imagePreview) && (
               <div className="composer-actions">
                 <div className="composer-toggles">
                   <button
@@ -153,6 +209,22 @@ export default function FeedPage() {
                   >
                     <UserIcon /> {profile?.first_name} {profile?.last_name}
                   </button>
+
+                  {/* photo button */}
+                  <button
+                    className="ctoggle"
+                    onClick={() => fileRef.current?.click()}
+                    type="button"
+                  >
+                    <PhotoIcon /> Photo
+                  </button>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={handleImagePick}
+                  />
                 </div>
 
                 <div className="composer-right-actions">
@@ -163,7 +235,12 @@ export default function FeedPage() {
                   )}
                   <button
                     className="composer-cancel"
-                    onClick={() => { setFocused(false); setContent(""); setError(""); }}
+                    onClick={() => {
+                      setFocused(false);
+                      setContent("");
+                      setError("");
+                      removeImage();
+                    }}
                     type="button"
                   >
                     Cancel
@@ -171,7 +248,7 @@ export default function FeedPage() {
                   <button
                     className="composer-submit"
                     onClick={handleDesktopSubmit}
-                    disabled={posting || !content.trim()}
+                    disabled={posting || (!content.trim() && !image)}
                     type="button"
                   >
                     {posting ? <Spinner /> : "Confess"}
@@ -182,12 +259,11 @@ export default function FeedPage() {
 
             {error && <p className="composer-error">{error}</p>}
           </div>
-
         </div>
 
         <div className="feed-divider" />
 
-        {}
+        {/* ══ FEED ══════════════════════════════════════════════ */}
         {loading ? (
           <div className="feed-loading">
             <Spinner />
@@ -213,12 +289,12 @@ export default function FeedPage() {
         )}
       </main>
 
-      {}
+      {/* ══ MOBILE FAB ════════════════════════════════════════ */}
       <button className="mobile-fab" onClick={() => setMobileModal(true)}>
         <PenIcon />
       </button>
 
-      {}
+      {/* ══ MOBILE BOTTOM SHEET ═══════════════════════════════ */}
       {mobileModal && (
         <NewPostModal
           profile={profile}
@@ -230,6 +306,7 @@ export default function FeedPage() {
   );
 }
 
+/* ── Icons ────────────────────────────────────────────────────────── */
 const MaskIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
@@ -241,6 +318,18 @@ const MaskIcon = () => (
 const UserIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+  </svg>
+);
+const PhotoIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2"/>
+    <circle cx="8.5" cy="8.5" r="1.5"/>
+    <polyline points="21 15 16 10 5 21"/>
+  </svg>
+);
+const CloseIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
   </svg>
 );
 const PenIcon = () => (
