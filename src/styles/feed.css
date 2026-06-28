@@ -289,6 +289,6 @@
   .navbar-info { display: none; }
   .card { padding: 14px 14px; }
   .card-content { font-size: 14px; }
-  .modal { padding: 20px 16px; border-radius: 20px 20px 0 0; top: auto; bottom: 0; left: 0; right: 0; transform: none; width: 100%; max-width: 100%; }
+  .modal { padding: 20px 16px; border-radius: 20px; top: 50%; left: 50%; transform: translate(-50%, -50%); width: calc(100% - 32px); max-width: 100%; bottom: auto; right: auto; }
   .post-bar { padding: 12px 14px; }
 }
