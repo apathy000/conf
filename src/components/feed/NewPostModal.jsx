@@ -50,13 +50,20 @@ export default function NewPostModal({ profile, onClose, onPosted }) {
         onClick={onClose}
       />
 
-      {/* Modal */}
+      {/* Modal — inline style handles centering, framer only does scale+opacity */}
       <motion.div
         className="modal"
-        initial={{ opacity: 0, y: 40, scale: 0.96 }}
-        animate={{ opacity: 1, y: 0,  scale: 1 }}
-        exit={{ opacity: 0, y: 20, scale: 0.97 }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        style={{
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          zIndex: 201,
+        }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.97 }}
+        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Header */}
         <div className="modal-header">
@@ -80,14 +87,14 @@ export default function NewPostModal({ profile, onClose, onPosted }) {
           </button>
         </div>
 
-        {/* Who will see */}
+        {/* Hint */}
         <p className="modal-hint">
           {isAnonymous
             ? "🤫 Your name will be completely hidden"
             : `👤 Will post as ${profile?.first_name} ${profile?.last_name}`}
         </p>
 
-        {/* Text area */}
+        {/* Textarea */}
         <textarea
           className="modal-textarea"
           placeholder="Write your confession… (English or Armenian)"
@@ -124,6 +131,7 @@ export default function NewPostModal({ profile, onClose, onPosted }) {
   );
 }
 
+/* ── Icons ────────────────────────────────────────────────────────── */
 const CloseIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -131,7 +139,10 @@ const CloseIcon = () => (
 );
 const MaskIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+    <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+    <line x1="9" y1="9" x2="9.01" y2="9"/>
+    <line x1="15" y1="9" x2="15.01" y2="9"/>
   </svg>
 );
 const UserIcon = () => (
