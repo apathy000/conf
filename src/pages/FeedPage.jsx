@@ -240,20 +240,19 @@ export default function FeedPage() {
           <div className="feed-list">
             {confessions.map((c) => (
               <ConfessionCard
-                key={c.id}
-                confession={c}
-                currentUserId={user?.id}
-                onLike={async (id, current) => {
-                  setConfessions(prev =>
-                    prev.map(x => x.id === id ? { ...x, likes_count: x.likes_count + 1 } : x)
-                  );
-                  await supabase.from("confessions").update({ likes_count: current + 1 }).eq("id", id);
-                }}
-                onDelete={async (id) => {
-                  setConfessions(prev => prev.filter(x => x.id !== id));
-                  await supabase.from("confessions").delete().eq("id", id);
-                }}
-              />
+              key={c.id}
+              confession={c}
+              currentUserId={user?.id}
+              onLikeChange={(id, likesCount) => {
+                setConfessions(prev =>
+                  prev.map(x => x.id === id ? { ...x, likes_count: likesCount } : x)
+                );
+              }}
+              onDelete={async (id) => {
+                setConfessions(prev => prev.filter(x => x.id !== id));
+                await supabase.from("confessions").delete().eq("id", id);
+              }}
+            />
             ))}
           </div>
         )}

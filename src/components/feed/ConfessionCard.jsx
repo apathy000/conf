@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../../lib/supabase";
 
-export default function ConfessionCard({ confession, currentUserId, onLike, onDelete }) {
+export default function ConfessionCard({ confession, currentUserId, onLikeChange, onDelete }) {
   const [liked, setLiked] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState([]);
@@ -14,6 +14,23 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
   const [likesCount, setLikesCount] = useState(confession.likes_count || 0);
 
   const isOwner = confession.author_id === currentUserId;
+
+  useEffect(() => {
+    const checkLiked = async () => {
+      if (!currentUserId || !confession.id) return;
+
+      const { data } = await supabase
+        .from("likes")
+        .select("id")
+        .eq("confession_id", confession.id)
+        .eq("user_id", currentUserId)
+        .maybeSingle();
+
+      setLiked(!!data);
+    };
+
+    checkLiked();
+  }, [currentUserId, confession.id]);
 
   const authorName = confession.is_anonymous
     ? "Anonymous"
@@ -39,16 +56,72 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
     return `${d}d ago`;
   };
 
-  const handleLike = async () => {
-    if (liked) {
-      setLiked(false);
-      setLikesCount((c) => Math.max(0, c - 1));
-    } else {
-      setLiked(true);
-      setLikesCount((c) => c + 1);
+  const syncLikesCount = async () => {
+    const { count, error } = await supabase
+      .from("likes")
+      .select("*", { count: "exact", head: true })
+      .eq("confession_id", confession.id);
+
+    if (error) {
+      console.error("Count likes error:", error);
+      return likesCount;
     }
 
-    if (onLike) onLike(confession.id, likesCount);
+    const nextCount = count || 0;
+
+    await supabase
+      .from("confessions")
+      .update({ likes_count: nextCount })
+      .eq("id", confession.id);
+
+    setLikesCount(nextCount);
+    onLikeChange?.(confession.id, nextCount);
+
+    return nextCount;
+  };
+
+  const handleLike = async () => {
+    if (!currentUserId) return;
+
+    const wasLiked = liked;
+
+    setLiked(!wasLiked);
+    setLikesCount((c) => wasLiked ? Math.max(0, c - 1) : c + 1);
+
+    if (wasLiked) {
+      const { error } = await supabase
+        .from("likes")
+        .delete()
+        .eq("confession_id", confession.id)
+        .eq("user_id", currentUserId);
+
+      if (error) {
+        console.error("Unlike error:", error);
+        setLiked(true);
+        setLikesCount((c) => c + 1);
+        return;
+      }
+    } else {
+      const { error } = await supabase
+        .from("likes")
+        .insert({
+          confession_id: confession.id,
+          user_id: currentUserId,
+        });
+
+      if (error && error.code !== "23505") {
+        console.error("Like error:", error);
+        setLiked(false);
+        setLikesCount((c) => Math.max(0, c - 1));
+        return;
+      }
+
+      if (error?.code === "23505") {
+        setLiked(true);
+      }
+    }
+
+    await syncLikesCount();
   };
 
   const loadComments = async () => {
@@ -113,9 +186,9 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
   };
 
   const handleDeleteComment = async (commentId) => {
-    setCommentError("");
-
     const previousComments = comments;
+
+    setCommentError("");
     setComments((prev) => prev.filter((comment) => comment.id !== commentId));
 
     const { error } = await supabase
@@ -131,16 +204,9 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
   };
 
   return (
-    <motion.div
-      className="card"
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-    >
+    <motion.div className="card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
       <div className="card-header">
-        <div className={`card-avatar ${confession.is_anonymous ? "anon" : ""}`}>
-          {initials}
-        </div>
+        <div className={`card-avatar ${confession.is_anonymous ? "anon" : ""}`}>{initials}</div>
 
         <div className="card-meta">
           <div className="card-author">
@@ -158,56 +224,27 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
         )}
       </div>
 
-      {confession.content && confession.content.trim() !== "" && (
-        <p className="card-content">{confession.content}</p>
-      )}
+      {confession.content?.trim() && <p className="card-content">{confession.content}</p>}
 
       {confession.image_url && (
         <div className="card-image-container">
-          <img
-            src={confession.image_url}
-            alt="confession attachment"
-            className="card-image"
-            loading="lazy"
-            onError={(e) => {
-              console.warn("Failed to load image:", confession.image_url);
-              e.target.style.display = "none";
-            }}
-          />
+          <img src={confession.image_url} alt="confession attachment" className="card-image" loading="lazy" />
         </div>
       )}
 
       <div className="card-actions">
-        <button
-          className={`card-action-btn like-btn ${liked ? "liked" : ""}`}
-          onClick={handleLike}
-          type="button"
-          aria-label="Like"
-        >
-          <HeartIcon filled={liked} />
-          <span>{likesCount}</span>
+        <button className={`card-action-btn like-btn ${liked ? "liked" : ""}`} onClick={handleLike} type="button">
+          <HeartIcon filled={liked} /> <span>{likesCount}</span>
         </button>
 
-        <button
-          className={`card-action-btn ${showComments ? "active" : ""}`}
-          onClick={toggleComments}
-          type="button"
-          aria-label="Comments"
-        >
-          <CommentIcon />
-          <span>{comments.length}</span>
+        <button className={`card-action-btn ${showComments ? "active" : ""}`} onClick={toggleComments} type="button">
+          <CommentIcon /> <span>{comments.length}</span>
         </button>
       </div>
 
       <AnimatePresence>
         {showComments && (
-          <motion.div
-            className="comments-section"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.28 }}
-          >
+          <motion.div className="comments-section" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
             {commentError && <p className="composer-error">{commentError}</p>}
 
             {comments.length === 0 ? (
@@ -225,8 +262,6 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
                     ? "?"
                     : `${comment.users?.first_name?.[0] || ""}${comment.users?.last_name?.[0] || ""}`;
 
-                  const canDeleteComment = comment.author_id === currentUserId;
-
                   return (
                     <div className="comment" key={comment.id}>
                       <div className="comment-avatar">{commentInitials}</div>
@@ -235,13 +270,9 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
                         <div className="comment-author">
                           {commentName}
                           <span className="comment-time">{timeAgo(comment.created_at)}</span>
-                          {canDeleteComment && (
-                            <button
-                              className="comment-delete"
-                              onClick={() => handleDeleteComment(comment.id)}
-                              type="button"
-                              aria-label="Delete comment"
-                            >
+
+                          {comment.author_id === currentUserId && (
+                            <button className="comment-delete" onClick={() => handleDeleteComment(comment.id)} type="button">
                               <TrashIcon />
                             </button>
                           )}
@@ -270,22 +301,12 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
                   placeholder="Write a comment..."
                 />
 
-                <button
-                  className="comment-submit"
-                  onClick={handlePostComment}
-                  disabled={postingComment || !commentText.trim()}
-                  type="button"
-                  aria-label="Send comment"
-                >
+                <button className="comment-submit" onClick={handlePostComment} disabled={postingComment || !commentText.trim()} type="button">
                   {postingComment ? "..." : <ArrowUpIcon />}
                 </button>
               </div>
 
-              <button
-                className={`comment-anon-toggle ${commentAnon ? "active" : ""}`}
-                onClick={() => setCommentAnon((v) => !v)}
-                type="button"
-              >
+              <button className={`comment-anon-toggle ${commentAnon ? "active" : ""}`} onClick={() => setCommentAnon((v) => !v)} type="button">
                 {commentAnon ? "Anonymous comment" : "Named comment"}
               </button>
             </div>
