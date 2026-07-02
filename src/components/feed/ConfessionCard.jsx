@@ -112,6 +112,24 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
     setPostingComment(false);
   };
 
+  const handleDeleteComment = async (commentId) => {
+    setCommentError("");
+
+    const previousComments = comments;
+    setComments((prev) => prev.filter((comment) => comment.id !== commentId));
+
+    const { error } = await supabase
+      .from("comments")
+      .delete()
+      .eq("id", commentId);
+
+    if (error) {
+      console.error("Delete comment error:", error);
+      setComments(previousComments);
+      setCommentError(error.message);
+    }
+  };
+
   return (
     <motion.div
       className="card"
@@ -164,16 +182,20 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
           className={`card-action-btn like-btn ${liked ? "liked" : ""}`}
           onClick={handleLike}
           type="button"
+          aria-label="Like"
         >
-          Like <span>{likesCount}</span>
+          <HeartIcon filled={liked} />
+          <span>{likesCount}</span>
         </button>
 
         <button
           className={`card-action-btn ${showComments ? "active" : ""}`}
           onClick={toggleComments}
           type="button"
+          aria-label="Comments"
         >
-          Comment <span>{comments.length}</span>
+          <CommentIcon />
+          <span>{comments.length}</span>
         </button>
       </div>
 
@@ -203,14 +225,28 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
                     ? "?"
                     : `${comment.users?.first_name?.[0] || ""}${comment.users?.last_name?.[0] || ""}`;
 
+                  const canDeleteComment = comment.author_id === currentUserId;
+
                   return (
                     <div className="comment" key={comment.id}>
                       <div className="comment-avatar">{commentInitials}</div>
+
                       <div className="comment-body">
                         <div className="comment-author">
                           {commentName}
                           <span className="comment-time">{timeAgo(comment.created_at)}</span>
+                          {canDeleteComment && (
+                            <button
+                              className="comment-delete"
+                              onClick={() => handleDeleteComment(comment.id)}
+                              type="button"
+                              aria-label="Delete comment"
+                            >
+                              <TrashIcon />
+                            </button>
+                          )}
                         </div>
+
                         <div className="comment-text">{comment.content}</div>
                       </div>
                     </div>
@@ -239,8 +275,9 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
                   onClick={handlePostComment}
                   disabled={postingComment || !commentText.trim()}
                   type="button"
+                  aria-label="Send comment"
                 >
-                  {postingComment ? "..." : "Send"}
+                  {postingComment ? "..." : <ArrowUpIcon />}
                 </button>
               </div>
 
@@ -258,3 +295,32 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
     </motion.div>
   );
 }
+
+const HeartIcon = ({ filled }) => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.8 4.6c-1.7-1.7-4.5-1.7-6.2 0L12 7.2 9.4 4.6c-1.7-1.7-4.5-1.7-6.2 0s-1.7 4.5 0 6.2L12 19.6l8.8-8.8c1.7-1.7 1.7-4.5 0-6.2z" />
+  </svg>
+);
+
+const CommentIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+  </svg>
+);
+
+const ArrowUpIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 19V5" />
+    <path d="M5 12l7-7 7 7" />
+  </svg>
+);
+
+const TrashIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 6h18" />
+    <path d="M8 6V4h8v2" />
+    <path d="M19 6l-1 14H6L5 6" />
+    <path d="M10 11v5" />
+    <path d="M14 11v5" />
+  </svg>
+);

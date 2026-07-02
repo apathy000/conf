@@ -665,3 +665,21 @@ body {
   object-fit: cover;
   display: block;
 }
+
+.comment-delete {
+  background: transparent;
+  border: none;
+  color: var(--hint);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 6px;
+  transition: color .2s, background .2s;
+}
+
+.comment-delete:hover {
+  color: var(--red);
+  background: rgba(192,57,43,.08);
+}
