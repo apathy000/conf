@@ -125,7 +125,11 @@ export default function FeedPage() {
         .insert({ author_id: session.user.id, content: wpContent.trim(), is_anonymous: wpAnon, likes_count: 0, image_url })
         .select(`*, users (first_name, last_name, username, class_grade)`)
         .single();
-      if (insertError) { setWpError("Failed to post."); return; }
+        if (insertError) {
+          console.error("Insert error:", insertError);
+          setError(insertError.message);
+          return;
+        }
       setConfessions((prev) => [data, ...prev]);
       setWpContent("");
       setWpAnon(true);
