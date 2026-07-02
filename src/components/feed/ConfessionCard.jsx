@@ -10,6 +10,7 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
   const [commentText, setCommentText] = useState("");
   const [commentAnon, setCommentAnon] = useState(false);
   const [postingComment, setPostingComment] = useState(false);
+  const [commentError, setCommentError] = useState("");
   const [likesCount, setLikesCount] = useState(confession.likes_count || 0);
 
   const isOwner = confession.author_id === currentUserId;
@@ -31,6 +32,7 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
     const m = Math.floor(diff / 60000);
     const h = Math.floor(m / 60);
     const d = Math.floor(h / 24);
+
     if (m < 1) return "just now";
     if (m < 60) return `${m}m ago`;
     if (h < 24) return `${h}h ago`;
@@ -40,35 +42,53 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
   const handleLike = async () => {
     if (liked) {
       setLiked(false);
-      setLikesCount(c => c - 1);
+      setLikesCount((c) => Math.max(0, c - 1));
     } else {
       setLiked(true);
-      setLikesCount(c => c + 1);
+      setLikesCount((c) => c + 1);
     }
-    // Optional: update in database
+
     if (onLike) onLike(confession.id, likesCount);
   };
 
   const loadComments = async () => {
     if (commentsLoaded) return;
-    const { data } = await supabase
+
+    const { data, error } = await supabase
       .from("comments")
       .select(`*, users ( first_name, last_name, class_grade )`)
       .eq("confession_id", confession.id)
       .order("created_at", { ascending: true });
+
+    if (error) {
+      console.error("Load comments error:", error);
+      setCommentError(error.message);
+      return;
+    }
+
     setComments(data || []);
     setCommentsLoaded(true);
   };
 
   const toggleComments = () => {
     if (!showComments) loadComments();
-    setShowComments(s => !s);
+    setShowComments((s) => !s);
   };
 
   const handlePostComment = async () => {
     if (!commentText.trim()) return;
+
     setPostingComment(true);
+    setCommentError("");
+
     const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+      setCommentError("You must be logged in to comment.");
+      setPostingComment(false);
+      return;
+    }
+
     const { data, error } = await supabase
       .from("comments")
       .insert({
@@ -79,10 +99,16 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
       })
       .select(`*, users ( first_name, last_name, class_grade )`)
       .single();
-    if (!error) {
-      setComments(prev => [...prev, data]);
+
+    if (error) {
+      console.error("Post comment error:", error);
+      setCommentError(error.message);
+    } else {
+      setComments((prev) => [...prev, data]);
       setCommentText("");
+      setCommentsLoaded(true);
     }
+
     setPostingComment(false);
   };
 
@@ -93,11 +119,11 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
-      {/* Header */}
       <div className="card-header">
         <div className={`card-avatar ${confession.is_anonymous ? "anon" : ""}`}>
           {initials}
         </div>
+
         <div className="card-meta">
           <div className="card-author">
             {authorName}
@@ -106,19 +132,18 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
           {authorClass && <div className="card-class">{authorClass}</div>}
           <div className="card-time">{timeAgo(confession.created_at)}</div>
         </div>
+
         {isOwner && (
-          <button className="card-delete" onClick={() => onDelete?.(confession.id)}>
+          <button className="card-delete" onClick={() => onDelete?.(confession.id)} type="button">
             Delete
           </button>
         )}
       </div>
 
-      {/* Content Text */}
       {confession.content && confession.content.trim() !== "" && (
         <p className="card-content">{confession.content}</p>
       )}
 
-      {/* IMAGE - FIXED */}
       {confession.image_url && (
         <div className="card-image-container">
           <img
@@ -134,24 +159,24 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
         </div>
       )}
 
-      {/* Actions */}
       <div className="card-actions">
         <button
           className={`card-action-btn like-btn ${liked ? "liked" : ""}`}
           onClick={handleLike}
+          type="button"
         >
-          ❤️ <span>{likesCount}</span>
+          Like <span>{likesCount}</span>
         </button>
 
         <button
           className={`card-action-btn ${showComments ? "active" : ""}`}
           onClick={toggleComments}
+          type="button"
         >
-          💬 <span>{comments.length}</span>
+          Comment <span>{comments.length}</span>
         </button>
       </div>
 
-      {/* Comments Section */}
       <AnimatePresence>
         {showComments && (
           <motion.div
@@ -161,8 +186,72 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.28 }}
           >
-            {/* Comments list + input here (you can keep your existing comment logic) */}
-            {/* ... your comment UI ... */}
+            {commentError && <p className="composer-error">{commentError}</p>}
+
+            {comments.length === 0 ? (
+              <div className="comments-empty">No comments yet.</div>
+            ) : (
+              <div className="comments-list">
+                {comments.map((comment) => {
+                  const commentName = comment.is_anonymous
+                    ? "Anonymous"
+                    : comment.users
+                      ? `${comment.users.first_name} ${comment.users.last_name}`
+                      : "Unknown";
+
+                  const commentInitials = comment.is_anonymous
+                    ? "?"
+                    : `${comment.users?.first_name?.[0] || ""}${comment.users?.last_name?.[0] || ""}`;
+
+                  return (
+                    <div className="comment" key={comment.id}>
+                      <div className="comment-avatar">{commentInitials}</div>
+                      <div className="comment-body">
+                        <div className="comment-author">
+                          {commentName}
+                          <span className="comment-time">{timeAgo(comment.created_at)}</span>
+                        </div>
+                        <div className="comment-text">{comment.content}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="comment-input-wrap">
+              <div className="comment-input-row">
+                <input
+                  className="comment-input"
+                  value={commentText}
+                  onChange={(e) => {
+                    setCommentText(e.target.value);
+                    setCommentError("");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handlePostComment();
+                  }}
+                  placeholder="Write a comment..."
+                />
+
+                <button
+                  className="comment-submit"
+                  onClick={handlePostComment}
+                  disabled={postingComment || !commentText.trim()}
+                  type="button"
+                >
+                  {postingComment ? "..." : "Send"}
+                </button>
+              </div>
+
+              <button
+                className={`comment-anon-toggle ${commentAnon ? "active" : ""}`}
+                onClick={() => setCommentAnon((v) => !v)}
+                type="button"
+              >
+                {commentAnon ? "Anonymous comment" : "Named comment"}
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
