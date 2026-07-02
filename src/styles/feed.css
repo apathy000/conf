@@ -650,3 +650,18 @@ body {
   .feed-main { padding: 10px 14px 110px; }
   .mobile-nav-btn { padding: 8px 16px; }
 }
+
+.card-image-container {
+  margin: 12px 0 14px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--bord);
+  background: #f8f8f8;
+}
+
+.card-image {
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+  display: block;
+}
