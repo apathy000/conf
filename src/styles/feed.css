@@ -20,6 +20,12 @@
   --in-bg:   rgba(0,0,0,0.04);
 }
 
+/* Prevent iOS zoom on input focus */
+input, select, textarea, button {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
 /* ════════════════════════════════════════
    BASE
 ════════════════════════════════════════ */

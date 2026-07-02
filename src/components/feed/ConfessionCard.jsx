@@ -3,14 +3,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../../lib/supabase";
 
 export default function ConfessionCard({ confession, currentUserId, onLike, onDelete }) {
-  const [liked,           setLiked          ] = useState(false);
-  const [showComments,    setShowComments   ] = useState(false);
-  const [comments,        setComments       ] = useState([]);
-  const [commentsLoaded,  setCommentsLoaded ] = useState(false);
-  const [commentText,     setCommentText    ] = useState("");
-  const [commentAnon,     setCommentAnon    ] = useState(false);
-  const [postingComment,  setPostingComment ] = useState(false);
-  const [likesCount,      setLikesCount     ] = useState(confession.likes_count);
+  const [liked,          setLiked         ] = useState(false);
+  const [showComments,   setShowComments  ] = useState(false);
+  const [comments,       setComments      ] = useState([]);
+  const [commentsLoaded, setCommentsLoaded] = useState(false);
+  const [commentText,    setCommentText   ] = useState("");
+  const [commentAnon,    setCommentAnon   ] = useState(false);
+  const [postingComment, setPostingComment] = useState(false);
+  const [likesCount,     setLikesCount    ] = useState(confession.likes_count);
 
   const isOwner = confession.author_id === currentUserId;
 
@@ -37,10 +37,8 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
     return `${d}d ago`;
   };
 
-
   const handleLike = async () => {
     if (liked) {
-
       setLiked(false);
       setLikesCount(c => c - 1);
       await supabase
@@ -48,7 +46,6 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
         .update({ likes_count: likesCount - 1 })
         .eq("id", confession.id);
     } else {
-
       setLiked(true);
       setLikesCount(c => c + 1);
       await supabase
@@ -57,7 +54,6 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
         .eq("id", confession.id);
     }
   };
-
 
   const loadComments = async () => {
     if (commentsLoaded) return;
@@ -78,9 +74,7 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
   const handlePostComment = async () => {
     if (!commentText.trim()) return;
     setPostingComment(true);
-
     const { data: { session } } = await supabase.auth.getSession();
-
     const { data, error } = await supabase
       .from("comments")
       .insert({
@@ -91,7 +85,6 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
       })
       .select(`*, users ( first_name, last_name, class_grade )`)
       .single();
-
     if (!error) {
       setComments(prev => [...prev, data]);
       setCommentText("");
@@ -106,7 +99,7 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
-      {}
+      {/* ── Header ── */}
       <div className="card-header">
         <div className={`card-avatar ${confession.is_anonymous ? "anon" : ""}`}>
           {initials}
@@ -126,19 +119,22 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
         )}
       </div>
 
-      {}
-      <p className="card-content">{confession.content}</p>
+      {/* ── Text content ── */}
+      {confession.content && confession.content.trim() !== "" && (
+        <p className="card-content">{confession.content}</p>
+      )}
 
-      {}
+      {/* ── Image — THIS IS THE FIX ── */}
       {confession.image_url && (
         <img
           src={confession.image_url}
-          alt="confession"
+          alt="confession attachment"
           className="card-image"
+          onError={(e) => { e.target.style.display = "none"; }}
         />
       )}
 
-      {}
+      {/* ── Actions ── */}
       <div className="card-actions">
         <button
           className={`card-action-btn like-btn ${liked ? "liked" : ""}`}
@@ -157,7 +153,7 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
         </button>
       </div>
 
-      {}
+      {/* ── Comments ── */}
       <AnimatePresence>
         {showComments && (
           <motion.div
@@ -167,7 +163,6 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
           >
-            {}
             {comments.length === 0 ? (
               <p className="comments-empty">No comments yet. Be first!</p>
             ) : (
@@ -175,11 +170,15 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
                 {comments.map(c => (
                   <div key={c.id} className="comment">
                     <div className="comment-avatar">
-                      {c.is_anonymous ? "?" : `${c.users?.first_name?.[0] || ""}${c.users?.last_name?.[0] || ""}`}
+                      {c.is_anonymous
+                        ? "?"
+                        : `${c.users?.first_name?.[0] || ""}${c.users?.last_name?.[0] || ""}`}
                     </div>
                     <div className="comment-body">
                       <div className="comment-author">
-                        {c.is_anonymous ? "Anonymous" : `${c.users?.first_name} ${c.users?.last_name}`}
+                        {c.is_anonymous
+                          ? "Anonymous"
+                          : `${c.users?.first_name} ${c.users?.last_name}`}
                         <span className="comment-time">{timeAgo(c.created_at)}</span>
                       </div>
                       <p className="comment-text">{c.content}</p>
@@ -189,7 +188,6 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
               </div>
             )}
 
-            {}
             <div className="comment-input-wrap">
               <div className="comment-input-row">
                 <input
@@ -209,7 +207,6 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
                   {postingComment ? <Spinner /> : <SendIcon />}
                 </button>
               </div>
-              {}
               <button
                 className={`comment-anon-toggle ${commentAnon ? "active" : ""}`}
                 onClick={() => setCommentAnon(a => !a)}
@@ -218,7 +215,6 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
                 {commentAnon ? "🤫 Anonymous" : "👤 As myself"}
               </button>
             </div>
-
           </motion.div>
         )}
       </AnimatePresence>
@@ -226,7 +222,7 @@ export default function ConfessionCard({ confession, currentUserId, onLike, onDe
   );
 }
 
-
+/* ── Icons ────────────────────────────────────────────────────────── */
 const HeartIcon = ({ filled }) => (
   <svg width="16" height="16" viewBox="0 0 24 24"
     fill={filled ? "currentColor" : "none"}
@@ -246,7 +242,7 @@ const TrashIcon = () => (
   </svg>
 );
 const SendIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <line x1="22" y1="2" x2="11" y2="13"/>
     <polygon points="22 2 15 22 11 13 2 9 22 2"/>
   </svg>
