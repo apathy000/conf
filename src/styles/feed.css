@@ -6,7 +6,8 @@
 @keyframes scaleIn     { from { opacity:0; transform:scale(0.96) translateY(12px); } to { opacity:1; transform:scale(1) translateY(0); } }
 
 :root {
-  --bg:      #f0f0f0;
+  --bg:      #ffffff;
+  --card-bg: #ececec;
   --surf:    #ffffff;
   --surf2:   #f7f7f7;
   --bord:    rgba(0,0,0,0.08);
@@ -209,7 +210,7 @@ body {
    CONFESSION CARD — light design
 ════════════════════════════════════════ */
 .card {
-  background: var(--surf);
+  background: var(--card-bg);
   border: 1px solid var(--bord);
   border-radius: 18px;
   padding: 16px 18px;
@@ -498,9 +499,10 @@ body {
   }
   .mobile-topbar-avatar {
     width: 36px; height: 36px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--blue), var(--red));
+    background: #cfcfcf;
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: #fff;
+    font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: #555;
+    overflow: hidden;
   }
 
   /* ── + FAB ─────────────────────────────── */
