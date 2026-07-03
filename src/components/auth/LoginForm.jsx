@@ -99,7 +99,7 @@ export default function LoginForm() {
     }
 
     setLoading(false);
-    navigate("/feed");
+    navigate("/avatar");
   };
 
   if (ipStatus === "checking") return <LoadingScreen />;
